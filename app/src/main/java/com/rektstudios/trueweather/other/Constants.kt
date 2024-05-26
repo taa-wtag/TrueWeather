@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.other
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.rektstudios.trueweather.data.local.CityItem
 import java.util.Calendar
 import java.util.Locale
@@ -11,6 +12,9 @@ object Constants {
 
     const val SEARCH_LIMIT = 5
     const val FORECAST_MAX_DAYS = 14
+
+
+    val USER_UUID = UUID.randomUUID().toString()
 
     enum class WeatherCondition {
         Cloudy,
@@ -38,5 +42,10 @@ object Constants {
     fun getTimeTodayInLocale(cityItem: CityItem): Long{
         return Calendar.getInstance(Locale(cityItem.language, cityItem.countryCode)).timeInMillis/1000
     }
+
+    val KEY_CITY_NAME = stringPreferencesKey("city_name")
+    val KEY_COUNTRY_NAME = stringPreferencesKey("country_name")
+    val KEY_METRIC = stringPreferencesKey("metric")
+    val KEY_CELSIUS = stringPreferencesKey("celsius")
 
 }

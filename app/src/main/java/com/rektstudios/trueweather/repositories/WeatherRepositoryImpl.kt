@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.repositories
 
+import android.location.Location
 import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.IRealmDao
 import com.rektstudios.trueweather.data.local.WeatherDayItem
@@ -9,6 +10,7 @@ import com.rektstudios.trueweather.data.mapper.toWeatherDataHour
 import com.rektstudios.trueweather.data.remote.WeatherApiService
 import com.rektstudios.trueweather.data.remote.reponses.weather.CurrentWeatherResponse
 import com.rektstudios.trueweather.data.remote.reponses.weather.ForecastWeatherResponse
+import com.rektstudios.trueweather.data.remote.reponses.weather.PlaceResponse
 import com.rektstudios.trueweather.other.Constants.FORECAST_MAX_DAYS
 import com.rektstudios.trueweather.other.Constants.getTimeTodayInLocale
 import com.rektstudios.trueweather.other.Resource
@@ -118,6 +120,21 @@ class WeatherRepositoryImpl @Inject constructor(
             )
         }
         return realmDao.getCityWeatherForecastInHours(cityItem)
+    }
+
+    override suspend fun getCityName(location: Location): Resource<PlaceResponse> {
+        return try {
+            val response = weatherApiService.getCityName(latLon = "${location.latitude}, ${location.longitude}")
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    return@let Resource.success(it)
+                } ?: Resource.error("An unknown error occurred", null)
+            } else {
+                Resource.error("An unknown error occurred", null)
+            }
+        } catch (e: Exception) {
+            Resource.error("Couldn't reach the server. Check your internet connection", null)
+        }
     }
 
 }

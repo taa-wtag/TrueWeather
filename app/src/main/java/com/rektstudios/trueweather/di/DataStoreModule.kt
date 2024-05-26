@@ -2,37 +2,38 @@ package com.rektstudios.trueweather.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.rektstudios.trueweather.repositories.IPrefsDataStoreRepository
-import com.rektstudios.trueweather.repositories.UserPrefsRepository
-import dagger.Binds
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
-val Context.prefsDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "user_preferences"
-)
+const val USER_PREFERENCES = "user_preferences"
+private val Context.prefsDataStore by preferencesDataStore(name = USER_PREFERENCES)
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DataStoreModule {
-    @Binds
+object DataStoreModule {
     @Singleton
-    abstract fun bindPrefsDataStoreRepository(
-        userPrefsRepository: UserPrefsRepository
-    ): IPrefsDataStoreRepository
-
-    companion object {
-        @Provides
-        @Singleton
-        fun providePrefsDataStore(
-            @ApplicationContext applicationContext: Context
-        ): DataStore<Preferences> {
-            return applicationContext.prefsDataStore
-        }
+    @Provides
+    fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { emptyPreferences() }
+            ),
+            migrations = listOf(SharedPreferencesMigration(appContext,USER_PREFERENCES)),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+            produceFile = { appContext.preferencesDataStoreFile(USER_PREFERENCES) }
+        )
     }
 }

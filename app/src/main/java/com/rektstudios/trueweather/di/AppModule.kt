@@ -1,12 +1,19 @@
 package com.rektstudios.trueweather.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.rektstudios.trueweather.data.local.IRealmDao
 import com.rektstudios.trueweather.data.remote.MapBoxApiService
 import com.rektstudios.trueweather.data.remote.WeatherApiService
 import com.rektstudios.trueweather.other.Constants.MAPBOX_BASE_URL
 import com.rektstudios.trueweather.other.Constants.WEATHER_BASE_URL
-import com.rektstudios.trueweather.other.SessionKey
-import com.rektstudios.trueweather.repositories.UserPrefsRepository
+import com.rektstudios.trueweather.repositories.CityRepositoryImpl
+import com.rektstudios.trueweather.repositories.ICityRepository
+import com.rektstudios.trueweather.repositories.IPrefsRepository
+import com.rektstudios.trueweather.repositories.IWeatherRepository
+import com.rektstudios.trueweather.repositories.PrefsRepositoryImpl
+import com.rektstudios.trueweather.repositories.WeatherRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,9 +32,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSessionKey(
-        userPrefsRepository: UserPrefsRepository
-    ) = SessionKey(userPrefsRepository)
+    fun providePrefsRepository(
+        prefsDataStore: DataStore<Preferences>
+    ): IPrefsRepository = PrefsRepositoryImpl(prefsDataStore)
 
     @Singleton
     @Provides
@@ -62,5 +69,17 @@ object AppModule {
         Realm.setDefaultConfiguration(realmConfiguration)
         return Realm.getDefaultInstance()
     }
+    @Singleton
+    @Provides
+    fun provideWeatherRepository(
+        weatherApiService: WeatherApiService,
+        realmDao: IRealmDao
+    ) = WeatherRepositoryImpl(weatherApiService,realmDao) as IWeatherRepository
 
+    @Singleton
+    @Provides
+    fun provideCityRepository(
+        mapBoxApiService: MapBoxApiService,
+        realmDao: IRealmDao
+    ) = CityRepositoryImpl(mapBoxApiService,realmDao) as ICityRepository
 }

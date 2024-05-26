@@ -59,11 +59,11 @@ class RealmDaoImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCityList(): Flow<CityItem> {
+    override fun getCityList(): Flow<CityItem> {
         return realm.where(CityItem::class.java).findAll().asFlow().flowOn(Dispatchers.IO)
     }
 
-    override suspend fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?> {
+    override fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?> {
         return realm.where(WeatherHourItem::class.java)
             .equalTo("dateItem.cityItem.id", city.id)
             .and()
@@ -73,7 +73,7 @@ class RealmDaoImpl @Inject constructor(
             .toFlow()
     }
 
-    override suspend fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem> {
+    override fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem> {
         return realm.where(WeatherDayItem::class.java)
             .equalTo("dateItem.cityItem.id", city.id)
             .and()
@@ -84,7 +84,7 @@ class RealmDaoImpl @Inject constructor(
             .flowOn(Dispatchers.IO)
     }
 
-    override suspend fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem> {
+    override fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem> {
         return realm.where(WeatherHourItem::class.java)
             .equalTo("dateItem.cityItem.id", city.id)
             .and()

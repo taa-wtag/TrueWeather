@@ -7,9 +7,9 @@ interface IRealmDao {
     suspend fun deleteCity(cityItem: CityItem)
     suspend fun addWeather(cityItem: CityItem, date: String, weatherHourItems: List<WeatherHourItem>)
     suspend fun addWeather(cityItem: CityItem, date: String, weatherDayItem: WeatherDayItem)
-    suspend fun getCityList(): Flow<CityItem>
-    suspend fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?>
-    suspend fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem>
-    suspend fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem>
+    fun getCityList(): Flow<CityItem>
+    fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?>
+    fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem>
+    fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem>
 
 }
