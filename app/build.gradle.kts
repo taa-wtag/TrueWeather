@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.dagger.hilt.android")
     id("androidx.navigation.safeargs.kotlin")
+    id("com.google.devtools.ksp")
     id("kotlin-kapt")
     id ("realm-android")
 }
@@ -20,6 +21,7 @@ android {
 
 
         buildConfigField( "String", "API_KEY", "${properties.getValue("API_KEY")}")
+        buildConfigField( "String", "TOKEN_KEY", "${properties.getValue("TOKEN_KEY")}")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -90,16 +92,16 @@ dependencies {
 
     // Dagger - Hilt
     implementation (libs.hilt.android)
-    kapt (libs.hilt.compiler)
-    kapt (libs.androidx.hilt.compiler)
+    ksp (libs.hilt.compiler)
+    ksp (libs.androidx.hilt.compiler)
 
     // For instrumentation tests
     androidTestImplementation  (libs.hilt.android.testing)
-    kaptAndroidTest (libs.hilt.compiler)
+    kspAndroidTest (libs.hilt.compiler)
 
     // For local unit tests
     testImplementation (libs.hilt.android.testing)
-    kaptTest (libs.hilt.compiler)
+    kspTest (libs.hilt.compiler)
 
     // Retrofit
     implementation (libs.retrofit)
@@ -121,4 +123,6 @@ dependencies {
     androidTestImplementation(libs.androidx.fragment)
 
     androidTestImplementation(libs.androidx.fragment.testing)
+    implementation(libs.androidx.datastore.preferences.android)
+
 }
