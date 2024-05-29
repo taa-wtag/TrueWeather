@@ -1,9 +1,7 @@
 package com.rektstudios.trueweather.other
 
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.rektstudios.trueweather.data.local.CityItem
 import java.util.Calendar
-import java.util.Locale
 import java.util.UUID
 
 object Constants {
@@ -34,13 +32,13 @@ object Constants {
         Foggy,
         None
     }
-    fun getDateTodayInLocale(cityItem: CityItem): Long{
-        val dateEpoch = getTimeTodayInLocale(cityItem)
+    fun getDateEpochToday(): Long{
+        val dateEpoch = getTimeEpochNow()
         return dateEpoch-dateEpoch%86400
     }
 
-    fun getTimeTodayInLocale(cityItem: CityItem): Long{
-        return Calendar.getInstance(Locale(cityItem.language, cityItem.countryCode)).timeInMillis/1000
+    fun getTimeEpochNow(): Long{
+        return Calendar.getInstance().timeInMillis/1000
     }
 
     val KEY_CITY_NAME = stringPreferencesKey("city_name")

@@ -32,6 +32,4 @@ class PrefsRepositoryImpl @Inject constructor(
             KEY_CELSIUS -> prefsDataStore.data.first()[key]?:saveValue(key,"true")
         }
     }
-
-
 }

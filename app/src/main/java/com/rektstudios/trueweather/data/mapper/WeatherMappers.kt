@@ -2,26 +2,25 @@ package com.rektstudios.trueweather.data.mapper
 
 import com.rektstudios.trueweather.data.local.WeatherDayItem
 import com.rektstudios.trueweather.data.local.WeatherHourItem
-import com.rektstudios.trueweather.data.remote.reponses.weather.Current
 import com.rektstudios.trueweather.data.remote.reponses.weather.Forecastday
-import com.rektstudios.trueweather.other.Constants.WeatherCondition
+import com.rektstudios.trueweather.data.remote.reponses.weather.WeatherHour
 
-fun Current.toWeatherDataHour(): WeatherHourItem {
+fun WeatherHour.toWeatherDataHour(): WeatherHourItem {
     val current = this
     return WeatherHourItem().apply {
-        unixTime = current.lastUpdatedEpoch?.toLong() ?: -1
-        time = current.lastUpdated?.substringAfter(" ") ?: ""
-        tempC = current.tempC ?: -999.0
-        tempF = current.tempF ?: -999.0
-        feelsLikeC = current.feelsLikeC ?: -999.0
-        feelsLikeF = current.feelsLikeF ?: -999.0
-        visKm = current.visKm ?: -1
-        visMiles = current.visMiles ?: -1
-        windKph = current.windKph ?: -1.0
-        windMph = current.windMph ?: -1.0
-        humidity = current.humidity ?: -1
-        isDay = current.isDay ?: -1
-        conditionText = current.condition?.text ?: ""
+            timeEpoch = current.timeEpoch?.toLong() ?: -1
+            time = current.time?: ""
+            tempC = current.tempC ?: -999.0
+            tempF = current.tempF ?: -999.0
+            feelsLikeC = current.feelsLikeC ?: -999.0
+            feelsLikeF = current.feelsLikeF ?: -999.0
+            visKm = current.visKm ?: -1
+            visMiles = current.visMiles ?: -1
+            windKph = current.windKph ?: -1.0
+            windMph = current.windMph ?: -1.0
+            humidity = current.humidity ?: -1
+            isDay = current.isDay ?: -1
+            conditionText = current.condition?.text ?: ""
 //        condition = when (current.condition?.text) {
 //            "Sunny" -> WeatherCondition.Sunny
 //            "Partly cloudy" -> WeatherCondition.PartCloudy
@@ -79,33 +78,18 @@ fun Current.toWeatherDataHour(): WeatherHourItem {
 
 fun Forecastday.toWeatherDataHour(): List<WeatherHourItem> {
     val hours = this.hour
-    if (hours != null) {
-        return hours.map {
-            val current = it
-            WeatherHourItem().apply {
-                unixTime = current.timeEpoch?.toLong() ?: -1
-                time = current.time?.substringAfter(" ") ?: ""
-                tempC = current.tempC ?: -999.0
-                tempF = current.tempF ?: -999.0
-                feelsLikeC = current.feelsLikeC ?: -999.0
-                feelsLikeF = current.feelsLikeF ?: -999.0
-                visKm = current.visKm ?: -1
-                visMiles = current.visMiles ?: -1
-                windKph = current.windKph ?: -1.0
-                windMph = current.windMph ?: -1.0
-                humidity = current.humidity ?: -1
-                isDay = current.isDay ?: -1
-                conditionText = current.condition?.text ?: ""
-            }
-        }
-    }
-    else return emptyList()
+    return hours?.map {
+        it.toWeatherDataHour()
+    } ?: emptyList()
 }
 
 fun Forecastday.toWeatherDataDay(): WeatherDayItem {
+    val parent = this
     val current = this.day
     return WeatherDayItem().apply {
         if (current != null) {
+            dateEpoch = parent.dateEpoch?.toLong() ?: -1
+            date = parent.date ?: ""
             maxTempC = current.maxTempC ?: -999.0
             maxTempF = current.maxTempF ?: -999.0
             minTempC = current.minTempC ?: -999.0

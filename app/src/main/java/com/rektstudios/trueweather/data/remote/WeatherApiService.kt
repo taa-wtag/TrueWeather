@@ -29,4 +29,10 @@ interface WeatherApiService {
         @Query("q") latLon: String,
     ): Response<PlaceResponse>
 
+    @GET("/search.json")
+    suspend fun searchCity(
+        @Query("key") apiKey: String = BuildConfig.API_KEY,
+        @Query("q") city: String,
+    ): Response<PlaceResponse>
+
 }
