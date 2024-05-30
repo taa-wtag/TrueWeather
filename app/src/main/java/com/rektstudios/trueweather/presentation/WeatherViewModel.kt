@@ -27,23 +27,21 @@ class WeatherViewModel @Inject constructor(
     lateinit var currentCity: CityItem
     private lateinit var currentWeather: Flow<WeatherHourItem?>
     private lateinit var currentCityForecastWeather: Pair<Flow<WeatherDayItem>?, Flow<WeatherHourItem>?>
-    lateinit var isMetric : MutableLiveData<Boolean>
-        private set
-    lateinit var isCelsius : MutableLiveData<Boolean>
-        private set
+    val isMetric = MutableLiveData<Boolean>()
+    val isCelsius = MutableLiveData<Boolean>()
 
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            cityList = getCityListUseCase.invoke()
-            currentCity = currentCityUseCase.getCurrentCity()
-            getWeatherData()
-            isMetric.postValue( userPrefsUseCase.getIsMetric())
+//            cityList = getCityListUseCase.invoke()
+//            setCurrentCityAndWeather(currentCityUseCase.getCurrentCity())
+//            getWeatherData()
+            isMetric.postValue(userPrefsUseCase.getIsMetric())
             isCelsius.postValue(userPrefsUseCase.getIsCelsius())
         }
     }
 
-    fun setCurrentCity(cityItem: CityItem){
+    fun setCurrentCityAndWeather(cityItem: CityItem){
         currentCity = cityItem
         viewModelScope.launch(Dispatchers.IO) {
             currentCityUseCase.setCurrentCity(cityItem)
@@ -51,7 +49,7 @@ class WeatherViewModel @Inject constructor(
         }
     }
     fun setCurrentCityFromGPS() = viewModelScope.launch(Dispatchers.IO) {
-        currentCity = currentCityUseCase.getCurrentCity()
+        setCurrentCityAndWeather(currentCityUseCase.getCurrentCity())
     }
 
     private suspend fun getWeatherData(){
