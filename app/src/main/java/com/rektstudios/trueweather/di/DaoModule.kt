@@ -10,5 +10,7 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 abstract class DaoModule {
     @Binds
-    abstract fun bindRealmDao(realmDaoImpl: IRealmDao): IRealmDao
+    abstract fun bindRealmDao(
+        realmDaoImpl: IRealmDao
+    ): IRealmDao
 }

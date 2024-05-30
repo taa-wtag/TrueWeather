@@ -29,6 +29,7 @@ runner = "1.5.2"
 espressoContrib = "3.5.1"
 legacySupportV4 = "1.0.0"
 fragmentKtx = "1.7.1"
+playServicesLocation = "21.2.0"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
@@ -72,6 +73,7 @@ androidx-runner = { group = "androidx.test", name = "runner", version.ref = "run
 androidx-espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espressoContrib" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

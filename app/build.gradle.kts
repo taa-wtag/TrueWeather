@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.espresso.contrib)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.play.services.location)
     testImplementation (libs.core.testing)
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
