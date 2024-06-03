@@ -75,7 +75,7 @@ class RealmDaoImpl @Inject constructor(
         getCityAsQuery(realm,city.cityName)
             ?.weatherEveryHour
             ?.where()
-            ?.lessThan("timeEpoch", getTimeEpochNow())
+            ?.lessThanOrEqualTo("timeEpoch", getTimeEpochNow())
             ?.sort("timeEpoch",Sort.DESCENDING)
             ?.findFirst()
             .toFlow()
@@ -85,7 +85,7 @@ class RealmDaoImpl @Inject constructor(
         getCityAsQuery(realm,city.cityName)
             ?.weatherEveryDay
             ?.where()
-            ?.greaterThanOrEqualTo("dateEpoch", getDateEpochToday())
+            ?.greaterThan("dateEpoch", getDateEpochToday())
             ?.sort("dateEpoch")
             ?.findAll()
             ?.asFlow()
@@ -95,7 +95,7 @@ class RealmDaoImpl @Inject constructor(
         getCityAsQuery(realm,city.cityName)
             ?.weatherEveryHour
             ?.where()
-            ?.greaterThanOrEqualTo("timeEpoch", getDateEpochToday())
+            ?.greaterThan("timeEpoch", getDateEpochToday())
             ?.sort("timeEpoch")
             ?.findAll()
             ?.asFlow()

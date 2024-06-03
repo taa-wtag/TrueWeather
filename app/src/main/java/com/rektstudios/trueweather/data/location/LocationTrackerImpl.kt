@@ -18,7 +18,7 @@ class LocationTrackerImpl @Inject constructor(
     private val application: Application
 ): ILocationTracker {
 
-    override suspend fun getCurrentLocation(): Location? {
+    override suspend fun getCurrentLocation(): Pair<Double, Double>? {
         val hasAccessFineLocationPermission = ContextCompat.checkSelfPermission(
             application,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -39,7 +39,7 @@ class LocationTrackerImpl @Inject constructor(
             locationClient
                 .lastLocation
                 .addOnSuccessListener {location: Location? ->
-                    if (location!=null) cont.resume(location)
+                    if (location!=null) cont.resume(Pair(location.latitude,location.longitude))
                     else cont.resume(null)
                 }
                 .addOnCanceledListener { cont.cancel() }

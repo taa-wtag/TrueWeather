@@ -14,16 +14,16 @@ class GetCityNameFromLocationUseCase @Inject constructor(
         var cityName = ""
             cityName = geocodeHelper.geocodeLocation(lat, lon)
         if (cityName.isEmpty()) {
-            withContext(Dispatchers.IO) {
-                cityName = fetchLocationFromApi(lat, lon) ?: ""
-            }
+                cityName = fetchLocationFromApi(lat, lon)
         }
         return cityName
     }
 
-    private suspend fun fetchLocationFromApi(lat: Double, lon: Double): String? {
-        return weatherRepository.getCityNameFromRemote(lat, lon).data?.let {
-            it.first().name + ", " + it.first().country
-        }
+    private suspend fun fetchLocationFromApi(lat: Double, lon: Double): String {
+        return weatherRepository.getCityNameFromRemote(lat, lon).data?.let {item ->
+            item.firstOrNull()?.let {
+                it.name + ", " + it.country
+            }
+        }?:""
     }
 }
