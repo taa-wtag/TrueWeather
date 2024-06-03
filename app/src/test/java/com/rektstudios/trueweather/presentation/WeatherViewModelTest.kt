@@ -17,6 +17,7 @@ import com.rektstudios.trueweather.domain.usecase.GetCityNameFromLocationUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCurrentWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
+import com.rektstudios.trueweather.domain.util.Constants.KEY_CITY_NAME
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.test.runTest
@@ -164,9 +165,19 @@ class WeatherViewModelTest {
 
     @Test
     fun `setCurrentCityFromGPS - current city is updated`()= runTest{
+        fakeLocationTracker.setLocation(34.05, -118.24)
         viewModel.setCurrentCityFromGPS()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals("Los Angeles, United States",viewModel.currentCity.cityName)
+    }
+
+    @Test
+    fun `init - current city is set from prefs data store`()= runTest{
+        fakeLocationTracker.setLocation(0.0, 0.0)
+        fakePrefsRepository.saveValue(KEY_CITY_NAME,"Bangkok, Thailand")
+        viewModel.setCurrentCityFromGPS()
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("Bangkok, Thailand",viewModel.currentCity.cityName)
     }
 
 }

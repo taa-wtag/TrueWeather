@@ -1,7 +1,5 @@
 package com.rektstudios.trueweather.presentation
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rektstudios.trueweather.data.local.CityItem
@@ -14,7 +12,6 @@ import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

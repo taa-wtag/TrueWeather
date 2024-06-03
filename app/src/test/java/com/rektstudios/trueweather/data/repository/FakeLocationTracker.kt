@@ -5,7 +5,7 @@ import android.location.LocationManager
 import com.rektstudios.trueweather.domain.location.ILocationTracker
 
 class FakeLocationTracker: ILocationTracker {
-    private var location = Pair(34.05, -118.24)
+    var location = Pair(35.69, 139.69)
     override suspend fun getCurrentLocation(): Pair<Double, Double> {
         return location
     }

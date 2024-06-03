@@ -5,6 +5,7 @@ import com.rektstudios.trueweather.domain.location.ILocationTracker
 import com.rektstudios.trueweather.domain.repository.ICityRepository
 import com.rektstudios.trueweather.domain.repository.IPrefsRepository
 import com.rektstudios.trueweather.domain.util.Constants.KEY_CITY_NAME
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
 class CurrentCityUseCase @Inject constructor(
@@ -18,7 +19,7 @@ class CurrentCityUseCase @Inject constructor(
         locationTracker.getCurrentLocation()?.let {
             city = getCityNameFromLocationUseCase.invoke(it.first, it.second)
         }
-        if(city.isEmpty()) prefsRepository.getObservableValue(KEY_CITY_NAME).collect{city = it?:"" }
+        if(city.isEmpty()) city = prefsRepository.getObservableValue(KEY_CITY_NAME).firstOrNull()?:""
         if(city.isEmpty()) return null
         cityRepository.addCity(CityItem().apply { cityName = city })
         return cityRepository.getCityByName(city)
