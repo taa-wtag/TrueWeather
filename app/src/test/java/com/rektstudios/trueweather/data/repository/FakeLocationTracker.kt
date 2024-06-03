@@ -1,7 +1,5 @@
 package com.rektstudios.trueweather.data.repository
 
-import android.location.Location
-import android.location.LocationManager
 import com.rektstudios.trueweather.domain.location.ILocationTracker
 
 class FakeLocationTracker: ILocationTracker {
