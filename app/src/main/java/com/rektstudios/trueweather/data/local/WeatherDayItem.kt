@@ -1,10 +1,10 @@
 package com.rektstudios.trueweather.data.local
 
-import com.rektstudios.trueweather.other.Constants.WeatherCondition
 import io.realm.RealmObject
 
 open class WeatherDayItem: RealmObject() {
-    var dateItem: DateItem? = null
+    var dateEpoch: Long = -1
+    var date: String = ""
     var minTempC: Double = -999.0
     var minTempF: Double = -999.0
     var maxTempC: Double = -999.0
