@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.presentation
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,8 +12,9 @@ import com.rektstudios.trueweather.domain.usecase.GetCityListUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCurrentWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,34 +26,33 @@ class WeatherViewModel @Inject constructor(
     private val currentCityUseCase: CurrentCityUseCase
 ): ViewModel() {
     lateinit var cityList: Flow<CityItem> private set
-    lateinit var currentCity: CityItem
-    private lateinit var currentWeather: Flow<WeatherHourItem?>
-    private lateinit var currentCityForecastWeather: Pair<Flow<WeatherDayItem>?, Flow<WeatherHourItem>?>
-    lateinit var isMetric : MutableLiveData<Boolean>
-        private set
-    lateinit var isCelsius : MutableLiveData<Boolean>
-        private set
+    lateinit var currentCity: CityItem private set
+    lateinit var currentWeather: Flow<WeatherHourItem?> private set
+    lateinit var currentCityForecastWeather: Pair<Flow<WeatherDayItem>?, Flow<WeatherHourItem>?> private set
+    lateinit var isMetric: Flow<Boolean> private set
+    lateinit var isCelsius: Flow<Boolean> private set
 
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             cityList = getCityListUseCase.invoke()
-            currentCity = currentCityUseCase.getCurrentCity()
-            getWeatherData()
-            isMetric.postValue( userPrefsUseCase.getIsMetric())
-            isCelsius.postValue(userPrefsUseCase.getIsCelsius())
+            currentCityUseCase.getCurrentCity()?.let { setCurrentCityAndWeather(it) }
+            isMetric = userPrefsUseCase.getIsMetric()
+            isCelsius = userPrefsUseCase.getIsCelsius()
         }
     }
 
-    fun setCurrentCity(cityItem: CityItem){
-        currentCity = cityItem
-        viewModelScope.launch(Dispatchers.IO) {
-            currentCityUseCase.setCurrentCity(cityItem)
-            getWeatherData()
+    fun setCurrentCityAndWeather(cityItem: CityItem){
+        viewModelScope.launch {
+            if(checkCityInCityList(cityItem)) {
+                currentCity = cityItem
+                currentCityUseCase.setCurrentCity(cityItem)
+                getWeatherData()
+            }
         }
     }
-    fun setCurrentCityFromGPS() = viewModelScope.launch(Dispatchers.IO) {
-        currentCity = currentCityUseCase.getCurrentCity()
+    fun setCurrentCityFromGPS() = viewModelScope.launch {
+        currentCityUseCase.getCurrentCity()?.let { setCurrentCityAndWeather(it) }
     }
 
     private suspend fun getWeatherData(){
@@ -60,16 +61,18 @@ class WeatherViewModel @Inject constructor(
     }
 
     fun toggleMetric(){
-        viewModelScope.launch(Dispatchers.IO) {
-            userPrefsUseCase.toggleMetric()
-            isMetric.postValue(userPrefsUseCase.getIsMetric())
+        viewModelScope.launch {
+            isMetric.firstOrNull()?.let { userPrefsUseCase.setMetric(!it) }
         }
     }
     fun toggleCelsius(){
-        viewModelScope.launch(Dispatchers.IO) {
-            userPrefsUseCase.toggleCelsius()
-            isCelsius.postValue(userPrefsUseCase.getIsCelsius())
+        viewModelScope.launch {
+            isCelsius.firstOrNull()?.let {  userPrefsUseCase.setCelsius(!it)}
         }
+    }
+
+    private suspend fun checkCityInCityList(cityItem: CityItem): Boolean{
+        return cityList.firstOrNull { it.cityName == cityItem.cityName } != null
     }
 
 }

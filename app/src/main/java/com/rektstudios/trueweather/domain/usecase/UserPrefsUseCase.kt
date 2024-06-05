@@ -3,13 +3,14 @@ package com.rektstudios.trueweather.domain.usecase
 import com.rektstudios.trueweather.domain.repository.IPrefsRepository
 import com.rektstudios.trueweather.domain.util.Constants.KEY_CELSIUS
 import com.rektstudios.trueweather.domain.util.Constants.KEY_METRIC
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class UserPrefsUseCase @Inject constructor(
     private val prefsRepository: IPrefsRepository,
 ) {
-    suspend fun getIsMetric() = prefsRepository.readValue(KEY_METRIC).toBoolean()
-    suspend fun getIsCelsius() = prefsRepository.readValue(KEY_CELSIUS).toBoolean()
-    suspend fun toggleMetric() = prefsRepository.saveValue(KEY_METRIC, getIsMetric().not().toString())
-    suspend fun toggleCelsius() = prefsRepository.saveValue(KEY_CELSIUS, getIsCelsius().not().toString())
+    suspend fun getIsMetric() = prefsRepository.getObservableValue(KEY_METRIC).map { it.toBoolean() }
+    suspend fun getIsCelsius() = prefsRepository.getObservableValue(KEY_CELSIUS).map { it.toBoolean() }
+    suspend fun setMetric(value: Boolean) = prefsRepository.saveValue(KEY_METRIC, value.toString())
+    suspend fun setCelsius(value: Boolean) = prefsRepository.saveValue(KEY_CELSIUS, value.toString())
 }

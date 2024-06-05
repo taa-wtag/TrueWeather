@@ -8,6 +8,7 @@ import com.rektstudios.trueweather.data.mapper.toWeatherDataHour
 import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
 class GetForecastWeatherUseCase @Inject constructor(
@@ -15,12 +16,11 @@ class GetForecastWeatherUseCase @Inject constructor(
 ) {
     suspend fun invoke(cityItem: CityItem): Pair<Flow<WeatherDayItem>?, Flow<WeatherHourItem>?> {
         val current = getWeatherFromCache(cityItem)
-        current.first?.first()?.let {
+        current.first?.firstOrNull()?.let {
             if(it.isValid)
                 return current
-        }. run {
-            return getWeatherFromRemote(cityItem)
         }
+        return getWeatherFromRemote(cityItem)
     }
 
     private suspend fun getWeatherFromCache(cityItem: CityItem) =
@@ -37,6 +37,7 @@ class GetForecastWeatherUseCase @Inject constructor(
                 weatherRepository.addWeather(cityItem,it)
             }
         }
-        return getWeatherFromCache(cityItem)
+        val value = getWeatherFromCache(cityItem)
+        return value
     }
 }

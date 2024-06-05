@@ -49,6 +49,9 @@ android {
     hilt {
         enableAggregatingTask = true
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
