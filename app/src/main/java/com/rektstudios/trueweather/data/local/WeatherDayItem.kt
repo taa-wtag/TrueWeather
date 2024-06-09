@@ -16,5 +16,6 @@ open class WeatherDayItem (
     var maxWindKph: Double= -1.0,
     var maxWindMph: Double = -1.0,
     var avgHumidity: Int = -1,
-    var conditionText: String = ""
+    var conditionText: String = "",
+    var imageUrl: String=""
 ): RealmObject()

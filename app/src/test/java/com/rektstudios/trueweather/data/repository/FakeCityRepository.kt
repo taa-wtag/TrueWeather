@@ -6,12 +6,9 @@ import com.rektstudios.trueweather.data.reponse.mapbox.City
 import com.rektstudios.trueweather.data.reponse.mapbox.Context
 import com.rektstudios.trueweather.data.reponse.mapbox.SearchResponse
 import com.rektstudios.trueweather.data.reponse.mapbox.Suggestion
-import com.rektstudios.trueweather.data.reponse.weather.Place
-import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
 import com.rektstudios.trueweather.domain.repository.ICityRepository
 import com.rektstudios.trueweather.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 
 
 class FakeCityRepository(private val realmDao: IRealmDao):ICityRepository {
@@ -38,13 +35,13 @@ class FakeCityRepository(private val realmDao: IRealmDao):ICityRepository {
         }
     }
 
-    override suspend fun addCity(cityItem: CityItem) = realmDao.addCity(cityItem)
+    override suspend fun addCity(city: String) = realmDao.addCity(city)
 
-    override suspend fun deleteCity(cityItem: CityItem) = realmDao.deleteCity(cityItem)
+    override suspend fun deleteCity(city: String) = realmDao.deleteCity(city)
 
-    override suspend fun observeCityList(): Flow<CityItem> = realmDao.getCityList()
+    override suspend fun observeCityList(): Flow<List<CityItem>> = realmDao.getCityList()
 
-    override suspend fun getCityByName(city: String): CityItem? = realmDao.getCity(city).first()
+    override suspend fun getCityByName(city: String): CityItem? = realmDao.getCity(city)
 
 
 }

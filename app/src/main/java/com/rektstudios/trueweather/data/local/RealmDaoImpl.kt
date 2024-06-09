@@ -1,104 +1,132 @@
 package com.rektstudios.trueweather.data.local
 
-import com.rektstudios.trueweather.domain.util.EpochUtil.getDateEpochToday
-import com.rektstudios.trueweather.domain.util.EpochUtil.getTimeEpochNow
+import com.rektstudios.trueweather.domain.util.Constants.FORECAST_MIN_TIME_PAST
 import io.realm.Realm
 import io.realm.Sort
 import io.realm.kotlin.toFlow
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
+import java.util.Calendar
 import javax.inject.Inject
 
 class RealmDaoImpl @Inject constructor(
     private val realm: Realm
 ):IRealmDao {
-    override suspend fun addCity(cityItem: CityItem)  {
-        withContext(Dispatchers.IO) {
+//    private var flag = true
+    override suspend fun addCity(city: String)  {
             realm.executeTransaction {
-                val city = getCityAsQuery(it, cityItem.cityName)
-                if(city==null) it.copyToRealm(cityItem)
+                getCityAsQuery(it, city) ?: run{ it.createObject(CityItem::class.java,city) }
             }
-        }
     }
 
-    override suspend fun deleteCity(cityItem: CityItem) {
-        withContext(Dispatchers.IO) {
+    override suspend fun deleteCity(city: String) {
             realm.executeTransaction {
-                getCityAsQuery(it, cityItem.cityName)?.deleteFromRealm()
+                getCityAsQuery(it, city)?.deleteFromRealm()
             }
-        }
     }
 
-    override suspend fun <T> addWeather(cityItem: CityItem, weather: T) {
-        withContext(Dispatchers.IO) {
+    override suspend fun <T> addWeather(city: String, weather: T) {
             realm.executeTransaction {
-                val city = getCityAsQuery(it,cityItem.cityName)
-                when(weather){
-                    is WeatherHourItem -> {
-                        city?.weatherEveryHour
-                            ?.where()
-                            ?.equalTo("timeEpoch", weather.timeEpoch)
-                            ?.findAll()
-                            ?.deleteAllFromRealm()
-                        it.copyToRealm(weather)
-                        city?.weatherEveryHour?.add(weather)
-                    }
-                    is WeatherDayItem -> {
-                        city?.weatherEveryDay
-                            ?.where()
-                            ?.equalTo("dateEpoch", weather.dateEpoch)
-                            ?.findAll()
-                            ?.deleteAllFromRealm()
-                        it.copyToRealm(weather)
-                        city?.weatherEveryDay?.add(weather)
+                getCityAsQuery(it,city)?.let {cityItem ->
+                    when (weather) {
+                        is WeatherHourItem -> {
+                            cityItem.weatherEveryHour
+                                .where()
+                                ?.equalTo("timeEpoch", weather.timeEpoch)
+                                ?.or()
+                                ?.lessThan("timeEpoch", Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
+                                ?.findAll()
+                                ?.deleteAllFromRealm()
+                            if(weather.timeEpoch>Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
+                                cityItem.weatherEveryHour.add(it.copyToRealm(weather))
+                        }
+
+                        is WeatherDayItem -> {
+                            cityItem.weatherEveryDay
+                                .where()
+                                ?.equalTo("dateEpoch", weather.dateEpoch)
+                                ?.or()
+                                ?.lessThan("dateEpoch", Calendar.getInstance().timeInMillis/1000L-FORECAST_MIN_TIME_PAST)
+                                ?.findAll()
+                                ?.deleteAllFromRealm()
+                            if(weather.dateEpoch>Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
+                                cityItem.weatherEveryDay.add(it.copyToRealm(weather))
+                        }
                     }
                 }
             }
-        }
     }
 
-    override fun getCityList(): Flow<CityItem> =
-        realm.where(CityItem::class.java)
-            .findAll()
-            .asFlow()
-            .flowOn(Dispatchers.IO)
+    override fun getCityList(): Flow<List<CityItem>> =realm.where(CityItem::class.java).findAll().toFlow()
+//    = callbackFlow {
+//        val results: RealmResults<CityItem> = realm.where(CityItem::class.java).findAll()
+//        var previousSize = results.size
+////        var previousPair = results.associate { it.cityName to it.weatherEveryHour.firstOrNull()?.timeEpoch }
+//        if(flag) {
+//            flag=false
+//            trySend(results.toList())
+//        }
+//        val listener = RealmChangeListener<RealmResults<CityItem>> { updatedResults ->
+//            val currentSize = updatedResults.size
+////            val currentPair = updatedResults.associate { it.cityName to it.weatherEveryHour.firstOrNull()?.timeEpoch }
+//            if (currentSize != previousSize) {
+//                previousSize = currentSize
+//                trySend(updatedResults.toList())
+//            }
+////            else if (comparator(previousPair,currentPair)){
+////                previousPair=currentPair
+////                trySend(updatedResults.toList())
+////            }
+//        }
+//        results.addChangeListener(listener)
+//        awaitClose {
+//            results.removeChangeListener(listener)
+//        }
+//    }
 
-    override fun getCity(city: String): Flow<CityItem?> = getCityAsQuery(realm,city).toFlow().flowOn(Dispatchers.IO)
+//    private fun comparator(previous: Map<String,Long?>, new: Map<String,Long?>): Boolean{
+//        new.forEach {
+//            if(previous[it.key]!=it.value)
+//                return true
+//        }
+//        previous.forEach {
+//            if(new[it.key]!=it.value)
+//                return true
+//        }
+//        return false
+//    }
+
+    override fun getCity(city: String): CityItem? = getCityAsQuery(realm,city)
+
     private fun getCityAsQuery(iRealm: Realm, cityName: String = ""): CityItem? =
         iRealm.where(CityItem::class.java).equalTo("cityName", cityName).findFirst()
 
 
-    override fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?> =
-        getCityAsQuery(realm,city.cityName)
+    override fun getCityWeatherCurrent(city: String): Flow<WeatherHourItem?> =
+        getCityAsQuery(realm,city)
             ?.weatherEveryHour
             ?.where()
-            ?.lessThanOrEqualTo("timeEpoch", getTimeEpochNow())
+            ?.lessThanOrEqualTo("timeEpoch", Calendar.getInstance().timeInMillis/1000)
             ?.sort("timeEpoch",Sort.DESCENDING)
             ?.findFirst()
             .toFlow()
-            .flowOn(Dispatchers.IO)
 
-    override fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem>? =
-        getCityAsQuery(realm,city.cityName)
+    override fun getCityWeatherForecastInDays(city: String): Flow<List<WeatherDayItem>>? =
+        getCityAsQuery(realm,city)
             ?.weatherEveryDay
             ?.where()
-            ?.greaterThan("dateEpoch", getDateEpochToday())
+            ?.greaterThan("dateEpoch", Calendar.getInstance().timeInMillis/1000)
             ?.sort("dateEpoch")
             ?.findAll()
-            ?.asFlow()
-            ?.flowOn(Dispatchers.IO)
-
-    override fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem>? =
-        getCityAsQuery(realm,city.cityName)
+            ?.toFlow()
+    override fun getCityWeatherForecastInHours(city: String): Flow<List<WeatherHourItem>>? =
+        getCityAsQuery(realm,city)
             ?.weatherEveryHour
             ?.where()
-            ?.greaterThan("timeEpoch", getDateEpochToday())
+            ?.greaterThan("timeEpoch", (Calendar.getInstance().timeInMillis/1000))
+            ?.and()
+            ?.lessThan("timeEpoch", (Calendar.getInstance().timeInMillis/1000)+86400)
             ?.sort("timeEpoch")
             ?.findAll()
-            ?.asFlow()
-            ?.flowOn(Dispatchers.IO)
+            ?.toFlow()
 
 }

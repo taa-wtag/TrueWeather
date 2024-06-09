@@ -10,8 +10,12 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.rektstudios.trueweather.R
 import com.rektstudios.trueweather.data.helper.GeocodeHelper
 import com.rektstudios.trueweather.data.local.IRealmDao
 import com.rektstudios.trueweather.data.local.RealmDaoImpl
@@ -109,10 +113,17 @@ object AppModule {
         val realmConfiguration = RealmConfiguration
             .Builder()
             .name("True Weather App")
+            .allowQueriesOnUiThread(true)
+            .allowWritesOnUiThread(true)
             .build()
         Realm.setDefaultConfiguration(realmConfiguration)
         return Realm.getDefaultInstance()
     }
+    @Singleton
+    @Provides
+    fun provideRealmDao(
+        realm: Realm
+    ): IRealmDao = RealmDaoImpl(realm)
 
     @Provides
     @Singleton
@@ -138,45 +149,45 @@ object AppModule {
     @Provides
     fun provideAddCityUseCase(
         cityRepository: ICityRepository
-    ) = AddCityUseCase(cityRepository)
+    ):AddCityUseCase = AddCityUseCase(cityRepository)
 
     @Singleton
     @Provides
     fun provideDeleteCityUseCase(
         cityRepository: ICityRepository
-    ) = DeleteCityUseCase(cityRepository)
+    ):DeleteCityUseCase = DeleteCityUseCase(cityRepository)
 
     @Singleton
     @Provides
     fun provideGetCityListUseCase(
         cityRepository: ICityRepository
-    ) = GetCityListUseCase(cityRepository)
+    ):GetCityListUseCase = GetCityListUseCase(cityRepository)
 
     @Singleton
     @Provides
     fun provideGetCityNameFromLocationUseCase(
         weatherRepository: IWeatherRepository,
         geocodeHelper: IGeocodeHelper
-    ) = GetCityNameFromLocationUseCase(weatherRepository, geocodeHelper)
+    ):GetCityNameFromLocationUseCase = GetCityNameFromLocationUseCase(weatherRepository, geocodeHelper)
 
     @Singleton
     @Provides
     fun provideGetCitySuggestionsUseCase(
         cityRepository: ICityRepository,
         weatherRepository: IWeatherRepository
-    ) = GetCitySuggestionsUseCase(cityRepository, weatherRepository)
+    ): GetCitySuggestionsUseCase = GetCitySuggestionsUseCase(cityRepository, weatherRepository)
 
     @Singleton
     @Provides
     fun provideGetCurrentWeatherUseCase(
         weatherRepository: IWeatherRepository
-    ) = GetCurrentWeatherUseCase(weatherRepository)
+    ): GetCurrentWeatherUseCase = GetCurrentWeatherUseCase(weatherRepository)
 
     @Singleton
     @Provides
     fun provideGetForecastWeatherUseCase(
         weatherRepository: IWeatherRepository
-    ) = GetForecastWeatherUseCase(weatherRepository)
+    ): GetForecastWeatherUseCase = GetForecastWeatherUseCase(weatherRepository)
 
     @Singleton
     @Provides
@@ -185,10 +196,21 @@ object AppModule {
         prefsRepository: IPrefsRepository,
         locationTracker: ILocationTracker,
         getCityNameFromLocationUseCase: GetCityNameFromLocationUseCase
-    ) = CurrentCityUseCase(cityRepository, prefsRepository, locationTracker, getCityNameFromLocationUseCase)
+    ): CurrentCityUseCase = CurrentCityUseCase(cityRepository, prefsRepository, locationTracker, getCityNameFromLocationUseCase)
+
     @Singleton
     @Provides
     fun provideUserPrefsUseCase(
         prefsRepository: IPrefsRepository
-    ) = UserPrefsUseCase(prefsRepository)
+    ):UserPrefsUseCase = UserPrefsUseCase(prefsRepository)
+
+    @Singleton
+    @Provides
+    fun provideGlideInstance(
+        @ApplicationContext context: Context
+    ): RequestManager = Glide.with(context).setDefaultRequestOptions(
+        RequestOptions()
+            .placeholder(R.drawable.ic_image)
+            .error(R.drawable.ic_image)
+    )
 }

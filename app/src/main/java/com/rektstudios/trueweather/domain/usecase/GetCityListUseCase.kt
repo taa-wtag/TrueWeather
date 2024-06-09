@@ -6,5 +6,5 @@ import javax.inject.Inject
 class GetCityListUseCase @Inject constructor(
     private val cityRepository: ICityRepository
 ) {
-    suspend fun invoke() = cityRepository.observeCityList()
+    suspend operator fun invoke() = cityRepository.observeCityList()
 }

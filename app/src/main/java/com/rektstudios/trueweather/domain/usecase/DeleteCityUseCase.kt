@@ -7,5 +7,5 @@ import javax.inject.Inject
 class DeleteCityUseCase @Inject constructor(
     private val cityRepository: ICityRepository
 ) {
-    suspend fun invoke(cityItem: CityItem) = cityRepository.deleteCity(cityItem)
+    suspend operator fun invoke(city: String) = cityRepository.deleteCity(city)
 }

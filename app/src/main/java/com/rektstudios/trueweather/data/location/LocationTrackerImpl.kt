@@ -37,13 +37,26 @@ class LocationTrackerImpl @Inject constructor(
 
         return suspendCancellableCoroutine {cont ->
             locationClient
-                .lastLocation
+                .lastLocation.apply {
+                    if (isComplete) {
+                        if (isSuccessful && result!=null) {
+                            cont.resume(Pair(result.latitude, result.longitude))
+                        } else {
+                            cont.resume(null)
+                        }
+                        return@suspendCancellableCoroutine
+                    }
+                }
                 .addOnSuccessListener {location: Location? ->
                     if (location!=null) cont.resume(Pair(location.latitude,location.longitude))
                     else cont.resume(null)
                 }
-                .addOnCanceledListener { cont.cancel() }
-                .addOnFailureListener { cont.resume(null) }
+                .addOnCanceledListener {
+                    cont.cancel()
+                }
+                .addOnFailureListener {
+                    cont.resume(null)
+                }
         }
     }
 }
