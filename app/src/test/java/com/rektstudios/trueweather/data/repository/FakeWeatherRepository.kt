@@ -1,6 +1,5 @@
 package com.rektstudios.trueweather.data.repository
 
-import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.IRealmDao
 import com.rektstudios.trueweather.data.local.WeatherDayItem
 import com.rektstudios.trueweather.data.local.WeatherHourItem
@@ -37,8 +36,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
             69.8,
             "2024-06-02 14:45",
             1717307488,
-            8,
-            4,
+            8.0,
+            4.0,
             9.0,
             5.6
         )
@@ -54,8 +53,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                 64.4,
                 "2024-06-02 14:45",
                 1717307488,
-                10,
-                6,
+                10.0,
+                6.0,
                 24.1,
                 15.0
             )
@@ -73,8 +72,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                 69.8,
                 "2024-06-02 14:45",
                 1717307488,
-                8,
-                4,
+                8.0,
+                4.0,
                 9.0,
                 5.6
             ),
@@ -114,8 +113,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                                 71.3,
                                 "2024-06-02 15:00",
                                 1717308000,
-                                2,
-                                1,
+                                2.0,
+                                1.0,
                                 22.0,
                                 13.6
                             )
@@ -135,8 +134,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                 64.4,
                 "2024-06-02 14:45",
                 1717307488,
-                10,
-                6,
+                10.0,
+                6.0,
                 24.1,
                 15.0
             ),
@@ -176,8 +175,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                                 46.5,
                                 "2024-06-02 15:00",
                                 1717308000,
-                                10,
-                                6,
+                                10.0,
+                                6.0,
                                 9.7,
                                 6.0
                             )
@@ -218,20 +217,20 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
             Resource.Error("Error", null)
     }
 
-    override suspend fun getCurrentWeatherFromCache(cityItem: CityItem): Flow<WeatherHourItem?>
-    = realmDao.getCityWeatherCurrent(cityItem)
+    override suspend fun getCurrentWeatherFromCache(city: String): Flow<WeatherHourItem?>
+    = realmDao.getCityWeatherCurrent(city)
 
     override suspend fun getWeatherForecastInDaysFromCache(
-        cityItem: CityItem,
+        city: String,
         days: Int
-    ): Flow<WeatherDayItem>? = realmDao.getCityWeatherForecastInDays(cityItem)
+    ): Flow<List<WeatherDayItem>>? = realmDao.getCityWeatherForecastInDays(city)
 
     override suspend fun getWeatherForecastInHoursFromCache(
-        cityItem: CityItem,
+        city: String,
         days: Int
-    ): Flow<WeatherHourItem>? = realmDao.getCityWeatherForecastInHours(cityItem)
+    ): Flow<List<WeatherHourItem>>? = realmDao.getCityWeatherForecastInHours(city)
 
-    override suspend fun <T> addWeather(cityItem: CityItem, weather: T) = realmDao.addWeather(cityItem,weather)
+    override suspend fun <T> addWeather(city: String, weather: T) = realmDao.addWeather(city,weather)
 
     override suspend fun getCityNameFromRemote(lat: Double, lon: Double): Resource<PlaceResponse> {
         return if(shouldReturnNetworkError || locationMap[Pair(lat,lon)].isNullOrEmpty()){

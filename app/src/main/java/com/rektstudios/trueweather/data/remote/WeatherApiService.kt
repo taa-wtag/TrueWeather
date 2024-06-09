@@ -10,26 +10,26 @@ import retrofit2.http.Query
 
 interface WeatherApiService {
 
-    @GET("/current.json")
+    @GET("current.json")
     suspend fun getCurrentWeather(
         @Query("key") apiKey: String = BuildConfig.API_KEY,
         @Query("q") city: String
     ): Response<CurrentWeatherResponse>
 
-    @GET("/forecast.json")
+    @GET("forecast.json")
     suspend fun getWeatherForecast(
         @Query("key") apiKey: String = BuildConfig.API_KEY,
         @Query("q") city: String,
         @Query("days") days: Int
     ): Response<ForecastWeatherResponse>
 
-    @GET("/search.json")
+    @GET("search.json")
     suspend fun getCityName(
         @Query("key") apiKey: String = BuildConfig.API_KEY,
         @Query("q") latLon: String,
     ): Response<PlaceResponse>
 
-    @GET("/search.json")
+    @GET("search.json")
     suspend fun searchCity(
         @Query("key") apiKey: String = BuildConfig.API_KEY,
         @Query("q") city: String,

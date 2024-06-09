@@ -20,9 +20,9 @@ data class WeatherHour(
     @SerializedName("time_epoch", alternate = ["last_updated_epoch"])
     val timeEpoch: Int?,
     @SerializedName("vis_km")
-    val visKm: Int?,
+    val visKm: Double?,
     @SerializedName("vis_miles")
-    val visMiles: Int?,
+    val visMiles: Double?,
     @SerializedName("wind_kph")
     val windKph: Double?,
     @SerializedName("wind_mph")

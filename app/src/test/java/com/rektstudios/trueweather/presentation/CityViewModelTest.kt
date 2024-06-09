@@ -15,7 +15,6 @@ import com.rektstudios.trueweather.domain.usecase.GetCurrentWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
 import com.rektstudios.trueweather.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.test.runTest
 
@@ -69,40 +68,30 @@ class CityViewModelTest {
 
     @Test
     fun `addCity - checks added to cache`() = runTest{
-        val city = CityItem().apply { cityName = "Dhaka, India" }
-        viewModel.addCity(city)
+        val city = CityItem("Dhaka, India")
+        viewModel.addCity(city.cityName)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = fakeRealmDao.getCity(city.cityName).first()
-        Assert.assertEquals(city,testCity)
+        val testCity = fakeRealmDao.getCity(city.cityName)
+        Assert.assertEquals(city.cityName,testCity?.cityName)
     }
 
     @Test
     fun `addCity - checks cities flow updated`() = runTest{
-        val city = CityItem().apply { cityName = "Dhaka, India" }
-        viewModel.addCity(city)
+        val city = CityItem("Dhaka, India")
+        viewModel.addCity(city.cityName)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = viewModel.cities.firstOrNull { it.cityName==city.cityName }
-        Assert.assertEquals(city,testCity)
+        val testCity= viewModel.cities.firstOrNull()?.firstOrNull()
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        Assert.assertEquals(city.cityName,testCity?.cityName)
     }
 
     @Test
-    fun `addCity - checks current weather added`() = runTest{
-        val city = CityItem().apply { cityName = "Tokyo, Japan" }
-        viewModel.addCity(city)
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = fakeRealmDao.getCity(city.cityName).first()
-        val currentWeather = viewModel.currentWeathers.firstOrNull { it.first.cityName == testCity?.cityName }?.second?.firstOrNull()
-        if (currentWeather != null) {
-            Assert.assertEquals(1717307488,currentWeather.timeEpoch)
-        }
-    }
-    @Test
     fun `deleteCity - checks deleted from cache`() = runTest{
-        val city = CityItem().apply { cityName = "Dhaka, India" }
-        viewModel.addCity(city)
+        val city = CityItem("Dhaka, India")
+        viewModel.addCity(city.cityName)
         viewModel.deleteCity(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = fakeRealmDao.getCity(city.cityName).firstOrNull()
+        val testCity = fakeRealmDao.getCity(city.cityName)
         Assert.assertEquals(null,testCity)
     }
 

@@ -10,7 +10,7 @@ class GetCitySuggestionsUseCase @Inject constructor(
     private val cityRepository: ICityRepository,
     private val weatherRepository: IWeatherRepository
 ) {
-    suspend fun invoke(query: String, mapbox: Boolean = true ):List<CityItem> =
+    suspend operator fun invoke(query: String, mapbox: Boolean = true ):List<CityItem> =
         if(mapbox) getCityListFromMapbox(query)
         else getCityListFromWeatherApi(query)
 

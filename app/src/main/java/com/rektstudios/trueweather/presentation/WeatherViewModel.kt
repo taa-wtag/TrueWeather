@@ -10,11 +10,14 @@ import com.rektstudios.trueweather.domain.usecase.GetCityListUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCurrentWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
-import kotlinx.coroutines.flow.Flow
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class WeatherViewModel @Inject constructor(
     private val userPrefsUseCase: UserPrefsUseCase,
     private val getCityListUseCase: GetCityListUseCase,
@@ -22,54 +25,54 @@ class WeatherViewModel @Inject constructor(
     private val getForecastWeatherUseCase: GetForecastWeatherUseCase,
     private val currentCityUseCase: CurrentCityUseCase
 ): ViewModel() {
-    lateinit var cityList: Flow<CityItem> private set
-    lateinit var currentCity: CityItem private set
-    lateinit var currentWeather: Flow<WeatherHourItem?> private set
-    lateinit var currentCityForecastWeather: Pair<Flow<WeatherDayItem>?, Flow<WeatherHourItem>?> private set
-    lateinit var isMetric: Flow<Boolean> private set
-    lateinit var isCelsius: Flow<Boolean> private set
+    var currentCity: CityItem? = null
+        private set
+    val isMetric = MutableStateFlow<Boolean?>(null)
+    val isCelsius = MutableStateFlow<Boolean?>(null)
+    val cityList = MutableStateFlow<List<CityItem>>(emptyList())
+    val currentWeather = MutableStateFlow<WeatherHourItem?>(null)
+    val currentCityForecastWeatherDay = MutableStateFlow<List<WeatherDayItem>>(emptyList())
+    val currentCityForecastWeatherHour= MutableStateFlow<List<WeatherHourItem>>(emptyList())
 
 
     init {
         viewModelScope.launch {
-            cityList = getCityListUseCase.invoke()
-            currentCityUseCase.getCurrentCity()?.let { setCurrentCityAndWeather(it) }
-            isMetric = userPrefsUseCase.getIsMetric()
-            isCelsius = userPrefsUseCase.getIsCelsius()
+            launch { userPrefsUseCase.getIsCelsius().collect(isCelsius)}
+            launch { userPrefsUseCase.getIsMetric().collect(isMetric)}
+            launch { getCityListUseCase().collect{cityList.value=it}}
+            launch { currentCityUseCase.getCurrentCity()?.let { setCurrentCityAndWeather(it) } }
         }
     }
 
     fun setCurrentCityAndWeather(cityItem: CityItem){
         viewModelScope.launch {
             if(checkCityInCityList(cityItem)) {
-                currentCity = cityItem
-                currentCityUseCase.setCurrentCity(cityItem)
-                getWeatherData()
+                launch {  currentCity = cityItem}
+                launch {  currentCityUseCase.setCurrentCity(cityItem.cityName)}
+                launch {  getCurrentWeatherUseCase(cityItem.cityName).collect(currentWeather)}
+                launch {  getForecastWeatherUseCase.getWeatherDay(cityItem.cityName).collect(currentCityForecastWeatherDay)}
+                launch {  getForecastWeatherUseCase.getWeatherHour(cityItem.cityName).collect(currentCityForecastWeatherHour)}
             }
         }
     }
     fun setCurrentCityFromGPS() = viewModelScope.launch {
-        currentCityUseCase.getCurrentCity()?.let { setCurrentCityAndWeather(it) }
+        currentCityUseCase.getCurrentCity(true)?.let { setCurrentCityAndWeather(it) }
     }
 
-    private suspend fun getWeatherData(){
-        currentWeather = getCurrentWeatherUseCase.invoke(currentCity)
-        currentCityForecastWeather = getForecastWeatherUseCase.invoke(currentCity)
-    }
 
     fun toggleMetric(){
-        viewModelScope.launch {
+        viewModelScope.launch  {
             isMetric.firstOrNull()?.let { userPrefsUseCase.setMetric(!it) }
         }
     }
     fun toggleCelsius(){
-        viewModelScope.launch {
+        viewModelScope.launch  {
             isCelsius.firstOrNull()?.let {  userPrefsUseCase.setCelsius(!it)}
         }
     }
 
     private suspend fun checkCityInCityList(cityItem: CityItem): Boolean{
-        return cityList.firstOrNull { it.cityName == cityItem.cityName } != null
+        return cityList.firstOrNull()?.find { it.cityName == cityItem.cityName } != null
     }
 
 }

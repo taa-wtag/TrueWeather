@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface ICityRepository {
     suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse>
-    suspend fun addCity(cityItem: CityItem)
-    suspend fun deleteCity(cityItem: CityItem)
-    suspend fun observeCityList(): Flow<CityItem>
+    suspend fun addCity(city: String)
+    suspend fun deleteCity(city: String)
+    suspend fun observeCityList(): Flow<List<CityItem>>
     suspend fun getCityByName(city: String): CityItem?
 }

@@ -49,9 +49,6 @@ android {
     hilt {
         enableAggregatingTask = true
     }
-    testOptions {
-        unitTests.isReturnDefaultValues = true
-    }
 }
 
 dependencies {
@@ -117,6 +114,13 @@ dependencies {
 
     // Testing Navigation
     androidTestImplementation(libs.androidx.navigation.testing)
+
+
+    // Glide
+    implementation (libs.glide)
+    annotationProcessor (libs.glide.compiler)
+    //noinspection KaptUsageInsteadOfKsp
+    kapt(libs.glide.compiler)
 
 
     // Activity KTX for viewModels()

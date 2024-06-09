@@ -14,10 +14,10 @@ interface IWeatherRepository {
 
     suspend fun getCurrentWeatherFromRemote(city: String): Resource<CurrentWeatherResponse>
     suspend fun getForecastWeatherFromRemote(city: String, days: Int = FORECAST_MAX_DAYS): Resource<ForecastWeatherResponse>
-    suspend fun getCurrentWeatherFromCache(cityItem: CityItem): Flow<WeatherHourItem?>
-    suspend fun getWeatherForecastInDaysFromCache(cityItem: CityItem, days: Int = FORECAST_MAX_DAYS): Flow<WeatherDayItem>?
-    suspend fun getWeatherForecastInHoursFromCache(cityItem: CityItem, days: Int = FORECAST_MAX_DAYS): Flow<WeatherHourItem>?
-    suspend fun <T> addWeather(cityItem: CityItem, weather: T)
+    suspend fun getCurrentWeatherFromCache(city: String): Flow<WeatherHourItem?>
+    suspend fun getWeatherForecastInDaysFromCache(city: String, days: Int = FORECAST_MAX_DAYS): Flow<List<WeatherDayItem>>?
+    suspend fun getWeatherForecastInHoursFromCache(city: String, days: Int = FORECAST_MAX_DAYS): Flow<List<WeatherHourItem>>?
+    suspend fun <T> addWeather(city: String, weather: T)
     suspend fun getCityNameFromRemote(lat: Double, lon: Double): Resource<PlaceResponse>
     suspend fun searchCity(city: String): Resource<PlaceResponse>
 }
