@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "com.rektstudios.trueweatherapp";
+option java_multiple_files = true;
+
+
+message UserPreferences{
+    string cityName = 1;
+    string countryName = 2;
+    bool metric = 3;
+    bool celsius = 4;
+}
