@@ -1,6 +1,5 @@
 package com.rektstudios.trueweather.domain.repository
 
-import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.WeatherDayItem
 import com.rektstudios.trueweather.data.local.WeatherHourItem
 import com.rektstudios.trueweather.data.reponse.weather.CurrentWeatherResponse

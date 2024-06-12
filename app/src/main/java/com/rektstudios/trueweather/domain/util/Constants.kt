@@ -12,6 +12,7 @@ object Constants {
     const val FORECAST_MIN_TIME_PAST = 901
     const val SEARCH_TIME_DELAY = 500L
     const val CITY_GRID_SPAN = 2
+    const val MAX_BACKGROUND_COUNT = 6
 
 
     val USER_UUID = UUID.randomUUID().toString()

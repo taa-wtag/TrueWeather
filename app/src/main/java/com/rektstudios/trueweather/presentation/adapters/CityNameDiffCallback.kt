@@ -1,16 +1,15 @@
 package com.rektstudios.trueweather.presentation.adapters
 
 import androidx.recyclerview.widget.DiffUtil
-import com.rektstudios.trueweather.data.local.CityItem
 
-class CityNameDiffCallback: DiffUtil.ItemCallback<CityItem>() {
+class CityNameDiffCallback: DiffUtil.ItemCallback<String>() {
 
-    override fun areItemsTheSame(oldItem: CityItem, newItem: CityItem): Boolean {
-        return oldItem.cityName==newItem.cityName
+    override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
+        return oldItem==newItem
     }
 
-    override fun areContentsTheSame(oldItem: CityItem, newItem: CityItem): Boolean {
-        return oldItem.cityName==newItem.cityName
+    override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
+        return oldItem==newItem
     }
 
 }

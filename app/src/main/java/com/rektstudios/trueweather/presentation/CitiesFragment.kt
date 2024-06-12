@@ -35,7 +35,8 @@ class CitiesFragment : Fragment() {
     @Inject
     lateinit var cityItemAdapter: CityItemAdapter
 
-    private val searchCityAdapter = SearchCityAdapter()
+    @Inject
+    lateinit var searchCityAdapter: SearchCityAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

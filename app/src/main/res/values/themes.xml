@@ -1,9 +1,13 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.TrueWeather" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
+<resources >
+    <style name="Base.Theme.TrueWeather" parent="Theme.Material3.DayNight.NoActionBar"/>
 
     <style name="Theme.TrueWeather" parent="Base.Theme.TrueWeather" />
+
+    <style name="Theme.TrueWeather.Starting" parent="Theme.SplashScreen.IconBackground">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/avd_anim</item>
+        <item name="windowSplashScreenAnimationDuration">2000</item>
+        <item name="postSplashScreenTheme">@style/Theme.TrueWeather</item>
+    </style>
+
 </resources>

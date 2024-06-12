@@ -21,6 +21,7 @@ import com.rektstudios.trueweather.presentation.adapters.CityCardAdapter
 import com.rektstudios.trueweather.presentation.adapters.WeatherDayAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 
@@ -43,13 +44,7 @@ class WeatherFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        permissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) {
-            if(it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
-                isLocationPermissionGranted = true
-        }
-        permissionLauncher.launch(locationPermissions)
+        requestPermissions()
     }
 
 
@@ -67,8 +62,9 @@ class WeatherFragment : Fragment() {
         setupViewPager()
         subscribeToObservers()
         binding.floatingActionButtonGetLocation.setOnClickListener {
-            if(isLocationPermissionGranted)
+            if(isLocationPermissionGranted) {
                 viewModel.setCurrentCityFromGPS()
+            }
             else
                 permissionLauncher.launch(locationPermissions)
         }
@@ -93,14 +89,14 @@ class WeatherFragment : Fragment() {
 
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                     super.onItemRangeInserted(positionStart, itemCount)
-                    binding.viewPagerCityCard.setCurrentItem(positionStart,true)
+                    binding.viewPagerCityCard.setCurrentItem(0,true)
                 }
             }
         )
         viewLifecycleOwner.lifecycleScope.launch {
             launch{viewModel.currentCityForecastWeatherDay.collect{ weatherDayAdapter.weatherDayItems = it.sortedBy { item -> item.dateEpoch } }}
             launch{viewModel.currentCityForecastWeatherHour.collect {weatherDayAdapter.weatherHourAdapter.weatherHourItems = it
-                .filter { item-> item.time.substring(11,13).toInt()>it.first().time.substring(11,13).toInt()}}}
+                .filter { item-> item.time.substring(11,13).toInt()>it.first().time.substring(11,13).toInt() || (item.time.substring(11,13) == "00" && item.timeEpoch>Calendar.getInstance().timeInMillis/1000L)}}}
             launch {
                 viewModel.cityList.collect {
                     if (it.isNotEmpty()) { cityCardAdapter.cityItems = it.map { cityItem ->Pair(cityItem, cityItem.weatherEveryHour.firstOrNull()) } }
@@ -132,5 +128,15 @@ class WeatherFragment : Fragment() {
             if(position!=cityCardAdapter.cityItems.size)
                 viewModel.setCurrentCityAndWeather(cityCardAdapter.cityItems[position].first)
         }
+    }
+
+    private fun requestPermissions(){
+        permissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) {
+            if(it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
+                isLocationPermissionGranted = true
+        }
+        permissionLauncher.launch(locationPermissions)
     }
 }

@@ -25,7 +25,7 @@ class CityViewModel @Inject constructor(
     private val getCurrentWeatherUseCase: GetCurrentWeatherUseCase
 ): ViewModel() {
     val cities = MutableStateFlow<List<CityItem>>(emptyList())
-    var suggestedCities =  MutableLiveData<List<CityItem>>(emptyList())
+    var suggestedCities =  MutableLiveData<List<String>>(emptyList())
         private set
     val isMetric = MutableStateFlow<Boolean?>(null)
     val isCelsius = MutableStateFlow<Boolean?>(null)

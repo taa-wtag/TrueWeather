@@ -89,7 +89,7 @@ class CityViewModelTest {
     fun `deleteCity - checks deleted from cache`() = runTest{
         val city = CityItem("Dhaka, India")
         viewModel.addCity(city.cityName)
-        viewModel.deleteCity(city)
+        viewModel.deleteCity(city.cityName)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity = fakeRealmDao.getCity(city.cityName)
         Assert.assertEquals(null,testCity)
@@ -102,7 +102,7 @@ class CityViewModelTest {
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity = viewModel.suggestedCities.getOrAwaitValue().firstOrNull()
         if (testCity != null) {
-            Assert.assertEquals("Tokyo, Japan",testCity.cityName)
+            Assert.assertEquals("Tokyo, Japan",testCity)
         }
     }
 

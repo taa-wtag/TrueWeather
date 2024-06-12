@@ -12,7 +12,6 @@ import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,7 +55,8 @@ class WeatherViewModel @Inject constructor(
         }
     }
     fun setCurrentCityFromGPS() = viewModelScope.launch {
-        currentCityUseCase.getCurrentCity(true)?.let { setCurrentCityAndWeather(it) }
+        val cityCount = cityList.value.size
+        currentCityUseCase.getCurrentCityFromLocation()?.let { if(cityList.value.size!=cityCount) setCurrentCityAndWeather(it) }
     }
 
 

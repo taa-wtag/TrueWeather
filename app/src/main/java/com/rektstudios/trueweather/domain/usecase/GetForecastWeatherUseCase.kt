@@ -1,6 +1,5 @@
 package com.rektstudios.trueweather.domain.usecase
 
-import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.WeatherDayItem
 import com.rektstudios.trueweather.data.local.WeatherHourItem
 import com.rektstudios.trueweather.data.mapper.toWeatherDataDay
@@ -9,7 +8,6 @@ import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
-import java.util.Calendar
 import javax.inject.Inject
 
 class GetForecastWeatherUseCase @Inject constructor(

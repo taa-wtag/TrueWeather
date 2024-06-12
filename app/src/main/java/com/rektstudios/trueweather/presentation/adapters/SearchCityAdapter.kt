@@ -6,7 +6,7 @@ import android.graphics.Typeface
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
-import com.rektstudios.trueweather.data.local.CityItem
+
 
 class SearchCityAdapter: RecyclerView.Adapter<SearchCityAdapter.TextViewHolder>() {
     private val differ = AsyncListDiffer(this, CityNameDiffCallback())
@@ -14,7 +14,7 @@ class SearchCityAdapter: RecyclerView.Adapter<SearchCityAdapter.TextViewHolder>(
     fun setOnItemClickListener(listener: (String) -> Unit) {
         onItemClickListener = listener
     }
-    var cityItems: List<CityItem>
+    var cityItems: List<String>
         get() = differ.currentList
         set(value) = differ.submitList(value)
 
@@ -33,8 +33,6 @@ class SearchCityAdapter: RecyclerView.Adapter<SearchCityAdapter.TextViewHolder>(
             textSize = 16f
             typeface = Typeface.DEFAULT
         }
-
-        // Return a new instance of the ViewHolder
         return TextViewHolder(textView)
     }
 
@@ -43,7 +41,7 @@ class SearchCityAdapter: RecyclerView.Adapter<SearchCityAdapter.TextViewHolder>(
     }
 
     override fun onBindViewHolder(holder: TextViewHolder, position: Int) {
-        holder.textView.text = cityItems[position].cityName
-        holder.textView.setOnClickListener{ onItemClickListener?.let { it(cityItems[position].cityName) } }
+        holder.textView.text = cityItems[position]
+        holder.textView.setOnClickListener{ onItemClickListener?.let { it(cityItems[position]) } }
     }
 }

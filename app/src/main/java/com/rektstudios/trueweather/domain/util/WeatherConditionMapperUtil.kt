@@ -1,6 +1,5 @@
 package com.rektstudios.trueweather.domain.util
 
-import android.util.Log
 
 class WeatherConditionMapperUtil {
     companion object{

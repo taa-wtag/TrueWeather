@@ -1,6 +1,5 @@
 package com.rektstudios.trueweather.data.repository
 
-import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.IRealmDao
 import com.rektstudios.trueweather.data.local.WeatherDayItem
 import com.rektstudios.trueweather.data.local.WeatherHourItem

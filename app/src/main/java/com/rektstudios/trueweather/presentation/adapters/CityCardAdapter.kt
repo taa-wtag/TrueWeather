@@ -50,7 +50,7 @@ class CityCardAdapter @Inject constructor(
     }
 
     override fun getItemCount(): Int {
-        return cityItems.size
+        return cityItems.size+1
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {

@@ -12,20 +12,31 @@ import com.rektstudios.trueweather.domain.util.WeatherConditionMapperUtil.Compan
 class WeatherHourItemViewHolder(private val binding: ItemWeatherHourBinding): RecyclerView.ViewHolder(binding.root){
     @SuppressLint("ResourceAsColor")
     fun bind(weatherHourItem: WeatherHourItem, glide: RequestManager, position: Int){
-        binding.textViewWeatherHourCardTime.text = weatherHourItem.time.substringAfter(" ")
-        binding.textViewWeatherHourCardCondition.text = getShortCondition(weatherHourItem.conditionText)
-        binding.imageViewWeatherHourCardCondition
-        glide.load("https:"+weatherHourItem.imageUrl).into(binding.imageViewWeatherHourCardCondition)
-        if(position==0)
-        {
-            binding.weatherHourCard.setCardBackgroundColor(ContextCompat.getColor(binding.root.context,R.color.weather_hour_card_selected_background))
-            binding.textViewWeatherHourCardCondition.setTextColor(ContextCompat.getColor(binding.root.context,R.color.weather_hour_card_selected_text))
-            binding.textViewWeatherHourCardTime.setTextColor(ContextCompat.getColor(binding.root.context,R.color.weather_hour_card_selected_text))
-        }
-        else{
-            binding.weatherHourCard.setCardBackgroundColor(ContextCompat.getColor(binding.root.context,R.color.white))
-            binding.textViewWeatherHourCardCondition.setTextColor(ContextCompat.getColor(binding.root.context,R.color.light_grey))
-            binding.textViewWeatherHourCardTime.setTextColor(ContextCompat.getColor(binding.root.context,R.color.light_grey))
+        if(weatherHourItem.isValid) {
+            binding.textViewWeatherHourCardTime.text = weatherHourItem.time.substringAfter(" ")
+            binding.textViewWeatherHourCardCondition.text =
+                getShortCondition(weatherHourItem.conditionText)
+            binding.imageViewWeatherHourCardCondition
+            glide.load(weatherHourItem.imageUrl)
+                .into(binding.imageViewWeatherHourCardCondition)
+            binding.weatherHourCard.setCardBackgroundColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (position == 0) R.color.weather_hour_card_selected_background else R.color.white
+                )
+            )
+            binding.textViewWeatherHourCardCondition.setTextColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (position == 0) R.color.weather_hour_card_selected_text else R.color.light_grey
+                )
+            )
+            binding.textViewWeatherHourCardTime.setTextColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (position == 0) R.color.weather_hour_card_selected_text else R.color.light_grey
+                )
+            )
         }
     }
 }

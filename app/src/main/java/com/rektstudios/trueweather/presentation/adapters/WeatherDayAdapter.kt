@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.presentation.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -49,17 +50,7 @@ class WeatherDayAdapter @Inject constructor(
                 TodayTextViewHolder(binding)
             }
             VIEW_TYPE_WEATHER_HOUR_RECYCLER_VIEW -> {
-                val recyclerView = RecyclerView(parent.context).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                    )
-                    clipToPadding = false
-                    layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-                }
-                recyclerView.setPadding(10,0,10,0)
-                recyclerView.adapter = weatherHourAdapter
-                WeatherHourRecyclerViewHolder(recyclerView)
+                WeatherHourRecyclerViewHolder(createRecyclerView(parent.context))
             }
             VIEW_TYPE_FORECAST_TEXT -> {
                 val binding = ItemForecastTextViewBinding.inflate(LayoutInflater.from(parent.context), parent,false)
@@ -81,6 +72,20 @@ class WeatherDayAdapter @Inject constructor(
             is ForecastTextViewHolder -> {}
             is WeatherDayItemViewHolder -> holder.bind(weatherDayItems[position - VIEW_TYPES + 1],glide)
         }
+    }
+
+    private fun createRecyclerView(context: Context): RecyclerView{
+        val recyclerView = RecyclerView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+            clipToPadding = false
+            layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        }
+        recyclerView.setPadding(10,0,10,0)
+        recyclerView.adapter = weatherHourAdapter
+        return recyclerView
     }
 
 }

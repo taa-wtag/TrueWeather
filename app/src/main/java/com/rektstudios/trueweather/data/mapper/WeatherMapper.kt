@@ -4,7 +4,6 @@ import com.rektstudios.trueweather.data.local.WeatherDayItem
 import com.rektstudios.trueweather.data.local.WeatherHourItem
 import com.rektstudios.trueweather.data.reponse.weather.Forecastday
 import com.rektstudios.trueweather.data.reponse.weather.WeatherHour
-import com.rektstudios.trueweather.domain.util.WeatherConditionMapperUtil.Companion.getShortCondition
 
 fun WeatherHour.toWeatherDataHour(): WeatherHourItem {
     return WeatherHourItem(

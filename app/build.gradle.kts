@@ -133,4 +133,6 @@ dependencies {
     androidTestImplementation(libs.androidx.fragment.testing)
     implementation(libs.androidx.datastore.preferences.android)
 
+    implementation(libs.androidx.core.splashscreen)
+
 }
