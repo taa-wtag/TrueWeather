@@ -19,7 +19,10 @@ class WeatherConditionMapperUtil {
             else "Text $text"
         }
         fun getMediumCondition(text: String): String{
-            return when (text) {
+            var correctedText = text
+            if(correctedText.contains("in"))
+                correctedText = correctedText.substringBefore(" in ")
+            return when (correctedText) {
                 "Sunny" -> "Sunny"
                 "Partly cloudy" -> "Partly Cloudy"
                 "Cloudy" -> "Cloudy"
@@ -30,6 +33,7 @@ class WeatherConditionMapperUtil {
                 "Patchy sleet possible" -> "Patchy Sleet"
                 "Patchy freezing drizzle possible" -> "Patchy F Drizzle"
                 "Thundery outbreaks possible" -> "Thunder"
+                "Thundery outbreaks" -> "Thunder"
                 "Blowing snow" -> "Blowing Snow"
                 "Blizzard" -> "Blizzard"
                 "Fog" -> "Fog"
@@ -68,7 +72,7 @@ class WeatherConditionMapperUtil {
                 "Moderate or heavy rain with thunder" -> "M/H Rain & Thunder"
                 "Patchy light snow with thunder" -> "L,P Snow & Thunder"
                 "Moderate or heavy snow with thunder" ->"H Snow & Thunder"
-                else -> text
+                else -> correctedText
             }
         }
     }

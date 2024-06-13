@@ -2,10 +2,10 @@ package com.rektstudios.trueweather.data.repository
 
 import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.IRealmDao
-import com.rektstudios.trueweather.data.reponse.mapbox.City
-import com.rektstudios.trueweather.data.reponse.mapbox.Context
+import com.rektstudios.trueweather.data.reponse.mapbox.CountryData
+import com.rektstudios.trueweather.data.reponse.mapbox.PlaceData
 import com.rektstudios.trueweather.data.reponse.mapbox.SearchResponse
-import com.rektstudios.trueweather.data.reponse.mapbox.Suggestion
+import com.rektstudios.trueweather.data.reponse.mapbox.CitySuggestion
 import com.rektstudios.trueweather.domain.repository.ICityRepository
 import com.rektstudios.trueweather.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
@@ -25,8 +25,8 @@ class FakeCityRepository(private val realmDao: IRealmDao):ICityRepository {
             Resource.Success(
                 SearchResponse(
                     listOf(
-                        Suggestion(
-                            Context(City("Japan")),
+                        CitySuggestion(
+                            PlaceData(CountryData("Japan")),
                             "Tokyo"
                         )
                     )

@@ -1,6 +1,6 @@
 package com.rektstudios.trueweather.domain.usecase
 
-import com.rektstudios.trueweather.data.mapper.toListCityName
+import com.rektstudios.trueweather.domain.mapper.toListCityName
 import com.rektstudios.trueweather.domain.repository.ICityRepository
 import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import javax.inject.Inject

@@ -19,7 +19,7 @@ class GetCityNameFromLocationUseCase @Inject constructor(
     private suspend fun fetchLocationFromApi(lat: Double, lon: Double): String {
         return weatherRepository.getCityNameFromRemote(lat, lon).data?.let {item ->
             item.firstOrNull()?.let {
-                it.name + ", " + it.country
+                it.cityName + ", " + it.countryName
             }
         }?:""
     }

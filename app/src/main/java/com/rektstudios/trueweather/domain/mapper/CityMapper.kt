@@ -1,15 +1,15 @@
-package com.rektstudios.trueweather.data.mapper
+package com.rektstudios.trueweather.domain.mapper
 
 import com.rektstudios.trueweather.data.reponse.mapbox.SearchResponse
 import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
 
 fun SearchResponse.toListCityName(): List<String> =
-    suggestions?.mapNotNull {city ->
-        city.name
+    citySuggestions?.map { city ->
+        city.cityName + ", "+city.placeData?.countryData?.countryName
     } ?: emptyList()
 
 fun PlaceResponse.toListCityName(): List<String> =
     mapNotNull {city ->
-        city.name
+        city.cityName + ", " +city.countryName
     }
 

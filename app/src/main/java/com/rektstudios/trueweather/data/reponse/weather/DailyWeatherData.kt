@@ -2,7 +2,7 @@ package com.rektstudios.trueweather.data.reponse.weather
 
 import com.google.gson.annotations.SerializedName
 
-data class WeatherDay(
+data class DailyWeatherData(
     @SerializedName("avghumidity")
     val avgHumidity: Int?,
     @SerializedName("avgtemp_c")
@@ -13,7 +13,8 @@ data class WeatherDay(
     val avgVisKm: Double?,
     @SerializedName("avgvis_miles")
     val avgVisMiles: Double?,
-    val condition: Condition?,
+    @SerializedName("condition")
+    val weatherCondition: WeatherCondition?,
     @SerializedName("maxtemp_c")
     val maxTempC: Double?,
     @SerializedName("maxtemp_f")

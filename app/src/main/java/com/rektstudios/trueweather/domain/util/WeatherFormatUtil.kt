@@ -1,20 +1,20 @@
 package com.rektstudios.trueweather.domain.util
 
-import com.rektstudios.trueweather.data.local.WeatherDayItem
-import com.rektstudios.trueweather.data.local.WeatherHourItem
+import com.rektstudios.trueweather.data.local.DailyWeatherItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 
 class WeatherFormatUtil(
-    private val weatherDayItems: List<WeatherDayItem>,
-    private val weatherHourItems: List<WeatherHourItem>
+    private val dailyWeatherItems: List<DailyWeatherItem>,
+    private val hourlyWeatherItems: List<HourlyWeatherItem>
 ) {
-    fun formatWeather(): List<Pair<WeatherDayItem, List<WeatherHourItem>>>{
-        val hourItems = weatherHourItems.sortedBy { it.timeEpoch }
-        return weatherDayItems.sortedBy {
+    fun formatWeather(): List<Pair<DailyWeatherItem, List<HourlyWeatherItem>>>{
+        val hourItems = hourlyWeatherItems.sortedBy { it.timeEpoch }
+        return dailyWeatherItems.sortedBy {
             it.dateEpoch
         }.map { day->
             Pair(day, hourItems.filter {
-                it.timeEpoch >= day.dateEpoch &&
-                        it.timeEpoch<(day.dateEpoch+86400)
+                it.timeEpoch?.let{it1-> day.dateEpoch?.let{it2-> it1>=it2}} == true &&
+                        it.timeEpoch?.let{it1 -> day.dateEpoch?.let { it2 -> it1<it2+86400 } } ==true
             })
         }
     }

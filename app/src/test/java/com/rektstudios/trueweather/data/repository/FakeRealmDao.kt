@@ -2,8 +2,8 @@ package com.rektstudios.trueweather.data.repository
 
 import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.IRealmDao
-import com.rektstudios.trueweather.data.local.WeatherDayItem
-import com.rektstudios.trueweather.data.local.WeatherHourItem
+import com.rektstudios.trueweather.data.local.DailyWeatherItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import io.realm.kotlin.toFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,8 +28,8 @@ class FakeRealmDao: IRealmDao {
 
     override suspend fun <T> addWeather(city: String, weather: T) {
         when(weather){
-            is WeatherHourItem -> cityList.firstOrNull { it.cityName == city }?.weatherEveryHour?.add(weather)
-            is WeatherDayItem -> cityList.firstOrNull { it.cityName == city }?.weatherEveryDay?.add(weather)
+            is HourlyWeatherItem -> cityList.firstOrNull { it.cityName == city }?.weatherEveryHour?.add(weather)
+            is DailyWeatherItem -> cityList.firstOrNull { it.cityName == city }?.weatherEveryDay?.add(weather)
         }
         observableCityList.emit(cityList)
     }
@@ -38,7 +38,7 @@ class FakeRealmDao: IRealmDao {
 
     override fun getCity(city: String): CityItem? = cityList.find { it.cityName==city }
 
-    override fun getCityWeatherCurrent(city: String): Flow<WeatherHourItem?>  =
+    override fun getCityWeatherCurrent(city: String): Flow<HourlyWeatherItem?>  =
             cityList
                 .find { it.cityName == city }
                 ?.weatherEveryHour
@@ -46,7 +46,7 @@ class FakeRealmDao: IRealmDao {
                 ?.firstOrNull { it.timeEpoch < 1717307500 }
                 .toFlow()
 
-    override fun getCityWeatherForecastInDays(city: String): Flow<List<WeatherDayItem>> =
+    override fun getCityWeatherForecastInDays(city: String): Flow<List<DailyWeatherItem>> =
         flowOf( cityList
             .find { it.cityName == city }
             ?.weatherEveryDay
@@ -54,7 +54,7 @@ class FakeRealmDao: IRealmDao {
             ?.filter { it.dateEpoch > 1717286399 }
             ?: emptyList()
         )
-    override fun getCityWeatherForecastInHours(city: String): Flow<List<WeatherHourItem>> =
+    override fun getCityWeatherForecastInHours(city: String): Flow<List<HourlyWeatherItem>> =
         flowOf( cityList
             .find { it.cityName == city }
             ?.weatherEveryHour?.toList()

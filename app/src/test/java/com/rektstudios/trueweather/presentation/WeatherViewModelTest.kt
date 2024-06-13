@@ -3,8 +3,8 @@ package com.rektstudios.trueweather.presentation
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.rektstudios.trueweather.MainDispatcherRule
 import com.rektstudios.trueweather.data.local.CityItem
-import com.rektstudios.trueweather.data.mapper.toWeatherDataDay
-import com.rektstudios.trueweather.data.mapper.toWeatherDataHour
+import com.rektstudios.trueweather.domain.mapper.toDailyWeatherItem
+import com.rektstudios.trueweather.domain.mapper.toHourlyWeatherItem
 import com.rektstudios.trueweather.data.repository.FakeCityRepository
 import com.rektstudios.trueweather.data.repository.FakeGeocodeHelper
 import com.rektstudios.trueweather.data.repository.FakeLocationTracker
@@ -116,7 +116,7 @@ class WeatherViewModelTest {
     @Test
     fun `init - current city weather is set automatically`()= runTest{
         assertEquals(
-            fakeWeatherRepository.fakeCurrentWeatherResponses[0].current!!.toWeatherDataHour().conditionText,
+            fakeWeatherRepository.fakeCurrentWeatherResponses[0].current!!.toHourlyWeatherItem().conditionText,
             viewModel.currentWeather.firstOrNull()?.conditionText
         )
     }
@@ -130,7 +130,7 @@ class WeatherViewModelTest {
         val condition = viewModel.currentWeather.firstOrNull()?.conditionText
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            fakeWeatherRepository.fakeCurrentWeatherResponses[1].current!!.toWeatherDataHour().conditionText,
+            fakeWeatherRepository.fakeCurrentWeatherResponses[1].current!!.toHourlyWeatherItem().conditionText,
             condition
         )
     }
@@ -139,14 +139,14 @@ class WeatherViewModelTest {
     fun `init - forecast city weather is set automatically`()= runTest{
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[0].forecast?.forecastDay?.get(0)
-                ?.toWeatherDataDay()!!.conditionText,
-            viewModel.currentCityForecastWeatherDay.firstOrNull()?.first()?.conditionText
+            fakeWeatherRepository.fakeForecastResponses[0].forecastData?.forecastDay?.get(0)
+                ?.toDailyWeatherItem()!!.conditionText,
+            viewModel.currentCityDailyWeatherForecast.firstOrNull()?.first()?.conditionText
         )
         assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[0].forecast?.forecastDay?.get(0)
-                ?.toWeatherDataHour()?.get(0)!!.conditionText,
-            viewModel.currentCityForecastWeatherHour.firstOrNull()?.first()?.conditionText
+            fakeWeatherRepository.fakeForecastResponses[0].forecastData?.forecastDay?.get(0)
+                ?.toHourlyWeatherItem()?.get(0)!!.conditionText,
+            viewModel.currentCityHourlyWeatherForecast.firstOrNull()?.first()?.conditionText
         )
     }
 
@@ -157,14 +157,14 @@ class WeatherViewModelTest {
         viewModel.setCurrentCityAndWeather(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[1].forecast?.forecastDay?.get(0)
-                ?.toWeatherDataDay()!!.conditionText,
-            viewModel.currentCityForecastWeatherDay.firstOrNull()?.first()?.conditionText
+            fakeWeatherRepository.fakeForecastResponses[1].forecastData?.forecastDay?.get(0)
+                ?.toDailyWeatherItem()!!.conditionText,
+            viewModel.currentCityDailyWeatherForecast.firstOrNull()?.first()?.conditionText
         )
         assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[1].forecast?.forecastDay?.get(0)
-                ?.toWeatherDataHour()?.get(0)!!.conditionText,
-            viewModel.currentCityForecastWeatherHour.firstOrNull()?.first()?.conditionText
+            fakeWeatherRepository.fakeForecastResponses[1].forecastData?.forecastDay?.get(0)
+                ?.toHourlyWeatherItem()?.get(0)!!.conditionText,
+            viewModel.currentCityHourlyWeatherForecast.firstOrNull()?.first()?.conditionText
         )
     }
 

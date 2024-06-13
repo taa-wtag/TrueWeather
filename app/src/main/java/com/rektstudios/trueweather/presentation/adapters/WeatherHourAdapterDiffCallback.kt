@@ -1,13 +1,13 @@
 package com.rektstudios.trueweather.presentation.adapters
 
 import androidx.recyclerview.widget.DiffUtil
-import com.rektstudios.trueweather.data.local.WeatherHourItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 
-class WeatherHourAdapterDiffCallback: DiffUtil.ItemCallback<WeatherHourItem>() {
-    override fun areItemsTheSame(oldItem: WeatherHourItem, newItem: WeatherHourItem): Boolean {
+class WeatherHourAdapterDiffCallback: DiffUtil.ItemCallback<HourlyWeatherItem>() {
+    override fun areItemsTheSame(oldItem: HourlyWeatherItem, newItem: HourlyWeatherItem): Boolean {
         return oldItem.timeEpoch == newItem.timeEpoch
     }
-    override fun areContentsTheSame(oldItem: WeatherHourItem, newItem: WeatherHourItem): Boolean {
+    override fun areContentsTheSame(oldItem: HourlyWeatherItem, newItem: HourlyWeatherItem): Boolean {
         return oldItem.tempC == newItem.tempC && oldItem.timeEpoch == newItem.timeEpoch
     }
 }

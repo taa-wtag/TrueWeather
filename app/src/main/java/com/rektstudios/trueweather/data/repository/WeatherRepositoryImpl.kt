@@ -1,8 +1,8 @@
 package com.rektstudios.trueweather.data.repository
 
 import com.rektstudios.trueweather.data.local.IRealmDao
-import com.rektstudios.trueweather.data.local.WeatherDayItem
-import com.rektstudios.trueweather.data.local.WeatherHourItem
+import com.rektstudios.trueweather.data.local.DailyWeatherItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.data.remote.WeatherApiService
 import com.rektstudios.trueweather.data.reponse.weather.CurrentWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.ForecastWeatherResponse
@@ -25,7 +25,9 @@ class WeatherRepositoryImpl @Inject constructor(
     override suspend fun getCurrentWeatherFromRemote(city: String): Resource<CurrentWeatherResponse>  = withContext(Dispatchers.IO){
         try {
             CheckResponseUtil(weatherApiService.getCurrentWeather(city = city)).checkResponse()
-        } catch (e: Exception) {Resource.Error(SERVER_ERROR_MESSAGE, null)}
+        } catch (e: Exception) {
+            Resource.Error(SERVER_ERROR_MESSAGE, null)
+        }
     }
 
     override suspend fun getForecastWeatherFromRemote(city: String, days: Int): Resource<ForecastWeatherResponse>  =
@@ -34,11 +36,11 @@ class WeatherRepositoryImpl @Inject constructor(
             } catch (e: Exception) {Resource.Error(SERVER_ERROR_MESSAGE, null)}
         }
 
-    override suspend fun getCurrentWeatherFromCache(city: String): Flow<WeatherHourItem?> = realmDao.getCityWeatherCurrent(city)
+    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem> = realmDao.getCityWeatherCurrent(city)
 
-    override suspend fun getWeatherForecastInDaysFromCache(city: String, days: Int): Flow<List<WeatherDayItem>>? = realmDao.getCityWeatherForecastInDays(city)
+    override suspend fun getWeatherForecastInDaysFromCache(city: String, days: Int): Flow<List<DailyWeatherItem>> = realmDao.getCityWeatherForecastInDays(city)
 
-    override suspend fun getWeatherForecastInHoursFromCache(city: String, days: Int): Flow<List<WeatherHourItem>>? = realmDao.getCityWeatherForecastInHours(city)
+    override suspend fun getWeatherForecastInHoursFromCache(city: String, days: Int): Flow<List<HourlyWeatherItem>> = realmDao.getCityWeatherForecastInHours(city)
     override suspend fun <T> addWeather(city: String, weather: T) = realmDao.addWeather(city,weather)
 
     override suspend fun getCityNameFromRemote(lat: Double, lon: Double): Resource<PlaceResponse>  = withContext(Dispatchers.IO){

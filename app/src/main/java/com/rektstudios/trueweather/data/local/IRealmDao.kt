@@ -8,8 +8,8 @@ interface IRealmDao {
     suspend fun <T> addWeather(city: String, weather: T)
     fun getCityList(): Flow<List<CityItem>>
     fun getCity(city : String): CityItem?
-    fun getCityWeatherCurrent(city: String): Flow<WeatherHourItem?>
-    fun getCityWeatherForecastInDays(city: String): Flow<List<WeatherDayItem>>?
-    fun getCityWeatherForecastInHours(city: String): Flow<List<WeatherHourItem>>?
+    fun getCityWeatherCurrent(city: String): Flow<HourlyWeatherItem>
+    fun getCityWeatherForecastInDays(city: String): Flow<List<DailyWeatherItem>>
+    fun getCityWeatherForecastInHours(city: String): Flow<List<HourlyWeatherItem>>
 
 }

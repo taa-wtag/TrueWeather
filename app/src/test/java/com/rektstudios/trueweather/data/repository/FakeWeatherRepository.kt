@@ -1,17 +1,17 @@
 package com.rektstudios.trueweather.data.repository
 
 import com.rektstudios.trueweather.data.local.IRealmDao
-import com.rektstudios.trueweather.data.local.WeatherDayItem
-import com.rektstudios.trueweather.data.local.WeatherHourItem
-import com.rektstudios.trueweather.data.reponse.weather.Condition
+import com.rektstudios.trueweather.data.local.DailyWeatherItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
+import com.rektstudios.trueweather.data.reponse.weather.WeatherCondition
 import com.rektstudios.trueweather.data.reponse.weather.CurrentWeatherResponse
-import com.rektstudios.trueweather.data.reponse.weather.Forecast
+import com.rektstudios.trueweather.data.reponse.weather.ForecastData
 import com.rektstudios.trueweather.data.reponse.weather.ForecastWeatherResponse
-import com.rektstudios.trueweather.data.reponse.weather.Forecastday
-import com.rektstudios.trueweather.data.reponse.weather.Place
+import com.rektstudios.trueweather.data.reponse.weather.DailyForecastData
+import com.rektstudios.trueweather.data.reponse.weather.CityData
 import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
-import com.rektstudios.trueweather.data.reponse.weather.WeatherDay
-import com.rektstudios.trueweather.data.reponse.weather.WeatherHour
+import com.rektstudios.trueweather.data.reponse.weather.DailyWeatherData
+import com.rektstudios.trueweather.data.reponse.weather.HourlyWeatherData
 import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import com.rektstudios.trueweather.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
@@ -26,8 +26,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
     )
 
     val fakeCurrentWeatherResponses = listOf(CurrentWeatherResponse(
-        WeatherHour(
-            Condition("//cdn.weatherapi.com/weather/64x64/day/296.png","Light rain"),
+        HourlyWeatherData(
+            WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/296.png","Light rain"),
             21.0,
             69.8,
             78,
@@ -43,8 +43,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
         )
     ),
         CurrentWeatherResponse(
-            WeatherHour(
-                Condition("//cdn.weatherapi.com/weather/64x64/day/116.png","Partly cloudy"),
+            HourlyWeatherData(
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/116.png","Partly cloudy"),
                 18.0,
                 64.4,
                 56,
@@ -62,8 +62,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
     )
     val fakeForecastResponses = listOf(
         ForecastWeatherResponse(
-            WeatherHour(
-                Condition("//cdn.weatherapi.com/weather/64x64/day/296.png","Light rain"),
+            HourlyWeatherData(
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/296.png","Light rain"),
                 21.0,
                 69.8,
                 78,
@@ -77,18 +77,18 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                 9.0,
                 5.6
             ),
-            Forecast(
+            ForecastData(
                 listOf(
-                    Forecastday(
+                    DailyForecastData(
                         "2024-06-02",
                         1717286400,
-                        WeatherDay(
+                        DailyWeatherData(
                             71,
                             19.4,
                             66.9,
                             8.3,
                             5.0,
-                            Condition(
+                            WeatherCondition(
                                 "//cdn.weatherapi.com/weather/64x64/day/302.png",
                                 "Moderate rain"
                             ),
@@ -100,8 +100,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                             62.9
                         ),
                         listOf(
-                            WeatherHour(
-                                Condition(
+                            HourlyWeatherData(
+                                WeatherCondition(
                                     "//cdn.weatherapi.com/weather/64x64/day/266.png",
                                     "Light drizzle"
                                 ),
@@ -124,8 +124,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
             )
         ),
         ForecastWeatherResponse(
-            WeatherHour(
-                Condition("//cdn.weatherapi.com/weather/64x64/day/116.png","Partly cloudy"),
+            HourlyWeatherData(
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/116.png","Partly cloudy"),
                 18.0,
                 64.4,
                 56,
@@ -139,18 +139,18 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                 24.1,
                 15.0
             ),
-            Forecast(
+            ForecastData(
                 listOf(
-                    Forecastday(
+                    DailyForecastData(
                         "2024-06-02",
                         1717286400,
-                        WeatherDay(
+                        DailyWeatherData(
                             65,
                             12.1,
                             53.8,
                             10.0,
                             6.0,
-                            Condition(
+                            WeatherCondition(
                                 "//cdn.weatherapi.com/weather/64x64/day/113.png",
                                 "Sunny"
                             ),
@@ -162,8 +162,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
                             43.8
                         ),
                         listOf(
-                            WeatherHour(
-                                Condition(
+                            HourlyWeatherData(
+                                WeatherCondition(
                                     "//cdn.weatherapi.com/weather/64x64/night/113.png",
                                     "Clear "
                                 ),
@@ -217,18 +217,18 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
             Resource.Error("Error", null)
     }
 
-    override suspend fun getCurrentWeatherFromCache(city: String): Flow<WeatherHourItem?>
+    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem?>
     = realmDao.getCityWeatherCurrent(city)
 
     override suspend fun getWeatherForecastInDaysFromCache(
         city: String,
         days: Int
-    ): Flow<List<WeatherDayItem>>? = realmDao.getCityWeatherForecastInDays(city)
+    ): Flow<List<DailyWeatherItem>>? = realmDao.getCityWeatherForecastInDays(city)
 
     override suspend fun getWeatherForecastInHoursFromCache(
         city: String,
         days: Int
-    ): Flow<List<WeatherHourItem>>? = realmDao.getCityWeatherForecastInHours(city)
+    ): Flow<List<HourlyWeatherItem>>? = realmDao.getCityWeatherForecastInHours(city)
 
     override suspend fun <T> addWeather(city: String, weather: T) = realmDao.addWeather(city,weather)
 
@@ -240,7 +240,7 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
             val country = locationMap[Pair(lat,lon)]?.substringAfter(", ")
             val name = locationMap[Pair(lat,lon)]?.substringBefore(",")
             Resource.Success(
-                    arrayListOf(Place(
+                    arrayListOf(CityData(
                         country,
                         name
                     )) as PlaceResponse

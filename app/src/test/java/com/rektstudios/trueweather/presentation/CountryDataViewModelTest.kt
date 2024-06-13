@@ -25,7 +25,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class CityViewModelTest {
+class CountryDataViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -80,7 +80,7 @@ class CityViewModelTest {
         val city = CityItem("Dhaka, India")
         viewModel.addCity(city.cityName)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity= viewModel.cities.firstOrNull()?.firstOrNull()
+        val testCity= viewModel.cityList.firstOrNull()?.firstOrNull()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         Assert.assertEquals(city.cityName,testCity?.cityName)
     }

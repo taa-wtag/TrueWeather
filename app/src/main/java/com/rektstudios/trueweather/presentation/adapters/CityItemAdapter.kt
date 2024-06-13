@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.rektstudios.trueweather.data.local.CityItem
-import com.rektstudios.trueweather.data.local.WeatherHourItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.databinding.ItemCityCardFragmentBinding
 import javax.inject.Inject
 
@@ -31,7 +31,7 @@ class CityItemAdapter @Inject constructor(
 
     private val differ = AsyncListDiffer(this, CityItemDiffCallback())
 
-    var cityItems: List<Pair<CityItem,WeatherHourItem?>>
+    var cityItems: List<Pair<CityItem,HourlyWeatherItem?>>
         get() = differ.currentList
         set(value) = differ.submitList(value)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityItemViewHolder {

@@ -6,9 +6,10 @@ import android.graphics.Typeface
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
+import javax.inject.Inject
 
 
-class SearchCityAdapter: RecyclerView.Adapter<SearchCityAdapter.TextViewHolder>() {
+class SearchCityAdapter @Inject constructor(): RecyclerView.Adapter<SearchCityAdapter.TextViewHolder>() {
     private val differ = AsyncListDiffer(this, CityNameDiffCallback())
     private var onItemClickListener: ((String) -> Unit)? = null
     fun setOnItemClickListener(listener: (String) -> Unit) {

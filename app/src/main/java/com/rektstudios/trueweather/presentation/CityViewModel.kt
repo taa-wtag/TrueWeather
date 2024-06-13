@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rektstudios.trueweather.data.local.CityItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.domain.usecase.AddCityUseCase
 import com.rektstudios.trueweather.domain.usecase.DeleteCityUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCityListUseCase
@@ -24,7 +25,8 @@ class CityViewModel @Inject constructor(
     private val getCitySuggestionsUseCase: GetCitySuggestionsUseCase,
     private val getCurrentWeatherUseCase: GetCurrentWeatherUseCase
 ): ViewModel() {
-    val cities = MutableStateFlow<List<CityItem>>(emptyList())
+    val cityList = MutableStateFlow<List<CityItem>>(emptyList())
+    val currentWeatherForEachCity = MutableStateFlow<List<HourlyWeatherItem>>(emptyList())
     var suggestedCities =  MutableLiveData<List<String>>(emptyList())
         private set
     val isMetric = MutableStateFlow<Boolean?>(null)
@@ -32,7 +34,14 @@ class CityViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            launch { getCityListUseCase().collect{cities.value=it}}
+            launch {
+                getCityListUseCase().collect{ cityList.value = it }
+            }
+            launch{
+                cityList.collect{
+                    getCurrentWeatherUseCase(it).collect(currentWeatherForEachCity)
+                }
+            }
             launch { userPrefsUseCase.getIsCelsius().collect(isCelsius)}
             launch { userPrefsUseCase.getIsMetric().collect(isMetric)}
         }
@@ -49,7 +58,6 @@ class CityViewModel @Inject constructor(
 
     fun addCity(city: String) = viewModelScope.launch {
         addCityUseCase(city)
-        getCurrentWeatherUseCase(city)
     }
 
     fun deleteCity(city: String) = viewModelScope.launch {

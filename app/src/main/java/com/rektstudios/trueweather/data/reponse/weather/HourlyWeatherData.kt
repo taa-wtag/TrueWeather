@@ -2,8 +2,9 @@ package com.rektstudios.trueweather.data.reponse.weather
 
 import com.google.gson.annotations.SerializedName
 
-data class WeatherHour(
-    val condition: Condition?,
+data class HourlyWeatherData(
+    @SerializedName("condition")
+    val weatherCondition: WeatherCondition?,
     @SerializedName("feelslike_c")
     val feelsLikeC: Double?,
     @SerializedName("feelslike_f")
@@ -16,7 +17,7 @@ data class WeatherHour(
     @SerializedName("temp_f")
     val tempF: Double?,
     @SerializedName("time", alternate = ["last_updated"])
-    val time: String?,
+    val timeString: String?,
     @SerializedName("time_epoch", alternate = ["last_updated_epoch"])
     val timeEpoch: Int?,
     @SerializedName("vis_km")

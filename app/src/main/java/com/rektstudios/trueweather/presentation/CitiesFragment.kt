@@ -24,6 +24,7 @@ import com.rektstudios.trueweather.presentation.adapters.SearchCityAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -107,9 +108,14 @@ class CitiesFragment : Fragment() {
         )
         viewLifecycleOwner.lifecycleScope.launch {
             launch {
-                viewModel.cities.collect {
-                    if (it.isNotEmpty()) { cityItemAdapter.cityItems = it.map { cityItem ->Pair(cityItem, cityItem.weatherEveryHour.firstOrNull()) } }
+                combine(viewModel.cityList,viewModel.currentWeatherForEachCity){cities, weathers->
+                    cities.mapIndexed { position, cityItem ->Pair(cityItem, if(weathers.isEmpty() || position>=weathers.size)null else weathers[position]) }
+                }.collect{
+                    cityItemAdapter.cityItems = it
                 }
+//                viewModel.cityList.collect {
+//                    if (it.isNotEmpty()) { cityItemAdapter.cityItems = it.map { cityItem ->Pair(cityItem, cityItem.weatherEveryHour.firstOrNull()) } }
+//                }
             }
             launch {
                 viewModel.suggestedCities.observe(viewLifecycleOwner) {

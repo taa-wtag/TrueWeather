@@ -8,7 +8,7 @@ object Constants {
     const val SERVER_ERROR_MESSAGE = "Couldn't reach the server. Check your internet connection"
 
     const val SEARCH_LIMIT = 5
-    const val FORECAST_MAX_DAYS = 8
+    const val FORECAST_MAX_DAYS = 3
     const val FORECAST_MIN_TIME_PAST = 901
     const val SEARCH_TIME_DELAY = 500L
     const val CITY_GRID_SPAN = 2

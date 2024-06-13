@@ -1,6 +1,6 @@
 package com.rektstudios.trueweather.data.reponse.weather
 
-data class Condition(
+data class WeatherCondition(
     val icon: String?,
     val text: String?
 )

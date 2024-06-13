@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
-import com.rektstudios.trueweather.data.local.WeatherHourItem
+import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.databinding.ItemWeatherHourBinding
 import javax.inject.Inject
 
@@ -15,7 +15,7 @@ class WeatherHourAdapter @Inject constructor(
 
     private val differ = AsyncListDiffer(this, WeatherHourAdapterDiffCallback())
 
-    var weatherHourItems: List<WeatherHourItem>
+    var hourlyWeatherItems: List<HourlyWeatherItem>
         get() = differ.currentList
         set(value) = differ.submitList(value)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherHourItemViewHolder {
@@ -24,10 +24,10 @@ class WeatherHourAdapter @Inject constructor(
     }
 
     override fun getItemCount(): Int {
-        return weatherHourItems.size
+        return hourlyWeatherItems.size
     }
 
     override fun onBindViewHolder(holder: WeatherHourItemViewHolder, position: Int) {
-        holder.bind(weatherHourItems[position],glide, position)
+        holder.bind(hourlyWeatherItems[position],glide, position)
     }
 }

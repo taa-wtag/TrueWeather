@@ -22,7 +22,9 @@ class CityRepositoryImpl @Inject constructor(
     override suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse> = withContext(Dispatchers.IO){
         try {
             CheckResponseUtil(mapBoxApiService.searchPlacesSuggest(searchQuery, USER_UUID)).checkResponse()
-        } catch(e: Exception) {Resource.Error(SERVER_ERROR_MESSAGE, null)}
+        } catch(e: Exception) {
+            Resource.Error(SERVER_ERROR_MESSAGE, null)
+        }
     }
 
     override suspend fun addCity(city: String) {realmDao.addCity(city)}

@@ -112,7 +112,7 @@ object AppModule {
         Realm.init(context)
         val realmConfiguration = RealmConfiguration
             .Builder()
-            .name("True Weather App")
+            .name("db_weather_app")
             .allowQueriesOnUiThread(true)
             .allowWritesOnUiThread(true)
             .build()

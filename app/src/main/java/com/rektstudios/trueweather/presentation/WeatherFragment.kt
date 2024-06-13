@@ -52,7 +52,7 @@ class WeatherFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentWeatherBinding.inflate(inflater,container,false)
+        binding = FragmentWeatherBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -62,44 +62,60 @@ class WeatherFragment : Fragment() {
         setupViewPager()
         subscribeToObservers()
         binding.floatingActionButtonGetLocation.setOnClickListener {
-            if(isLocationPermissionGranted) {
+            if (isLocationPermissionGranted) {
                 viewModel.setCurrentCityFromGPS()
-            }
-            else
+            } else
                 permissionLauncher.launch(locationPermissions)
         }
     }
 
     private fun subscribeToObservers() {
-        cityCardAdapter.navigateToCityFragment = { findNavController().navigate(WeatherFragmentDirections.actionWeatherFragmentToCitiesFragment())}
+        cityCardAdapter.navigateToCityFragment =
+            { findNavController().navigate(WeatherFragmentDirections.actionWeatherFragmentToCitiesFragment()) }
         weatherDayAdapter.registerAdapterDataObserver(
-            object: AdapterDataObserver(){
+            object : AdapterDataObserver() {
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    super.onItemRangeInserted(positionStart,itemCount)
+                    super.onItemRangeInserted(positionStart, itemCount)
                     binding.recyclerViewWeatherDayItem.smoothScrollToPosition(0)
                 }
             }
         )
         cityCardAdapter.registerAdapterDataObserver(
-            object: AdapterDataObserver(){
-                override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
-                    super.onItemRangeRemoved(positionStart,itemCount)
-                    binding.viewPagerCityCard.setCurrentItem(0,true)
-                }
+            object : AdapterDataObserver() {
 
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    super.onItemRangeInserted(positionStart, itemCount)
-                    binding.viewPagerCityCard.setCurrentItem(0,true)
-                }
             }
         )
         viewLifecycleOwner.lifecycleScope.launch {
-            launch{viewModel.currentCityForecastWeatherDay.collect{ weatherDayAdapter.weatherDayItems = it.sortedBy { item -> item.dateEpoch } }}
-            launch{viewModel.currentCityForecastWeatherHour.collect {weatherDayAdapter.weatherHourAdapter.weatherHourItems = it
-                .filter { item-> item.time.substring(11,13).toInt()>it.first().time.substring(11,13).toInt() || (item.time.substring(11,13) == "00" && item.timeEpoch>Calendar.getInstance().timeInMillis/1000L)}}}
+            launch {
+                viewModel.currentCityDailyWeatherForecast.collect {
+                    weatherDayAdapter.dailyWeatherItems = if (it.isNotEmpty())
+                        it.sortedBy { item -> item.dateEpoch }
+                    else emptyList()
+                }
+            }
+            launch {
+                viewModel.currentCityHourlyWeatherForecast.collect {
+                    weatherDayAdapter.weatherHourAdapter.hourlyWeatherItems =
+                        if (it.isNotEmpty()) it
+                            .filter { item ->
+                                item.timeString?.substring(11, 13)?.toInt()?.let { it1 ->
+                                    it.first().timeString?.substring(11, 13)?.toInt()
+                                        ?.let { it2 -> it1 > it2 }
+                                } == true || (item.timeString?.substring(11, 13) == "00" &&
+                                        item.timeEpoch?.let { it1 -> it1 > Calendar.getInstance().timeInMillis / 1000L } == true)
+                            }
+                        else emptyList()
+                }
+            }
             launch {
                 viewModel.cityList.collect {
-                    if (it.isNotEmpty()) { cityCardAdapter.cityItems = it.map { cityItem ->Pair(cityItem, cityItem.weatherEveryHour.firstOrNull()) } }
+                    cityCardAdapter.cityItems = if (it.isNotEmpty()) it.map { cityItem ->
+                        Pair(
+                            cityItem,
+                            cityItem.weatherEveryHour.firstOrNull()
+                        )
+                    } else emptyList()
+
                 }
             }
         }
@@ -118,23 +134,27 @@ class WeatherFragment : Fragment() {
             registerOnPageChangeCallback(pageChangedCallback)
         }
         binding.apply {
-            TabLayoutMediator(tabLayoutViewPagerDots,viewPagerCityCard){ _, _ -> }.attach()
+            TabLayoutMediator(tabLayoutViewPagerDots, viewPagerCityCard) { _, _ -> }.attach()
         }
     }
 
-    private val pageChangedCallback = object: OnPageChangeCallback(){
+    private val pageChangedCallback = object : OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
-            if(position!=cityCardAdapter.cityItems.size)
-                viewModel.setCurrentCityAndWeather(cityCardAdapter.cityItems[position].first)
+            if (position != cityCardAdapter.cityItems.size)
+                cityCardAdapter.cityItems[position].first.cityName?.let {
+                    viewModel.setCurrentCityAndWeather(it)
+                }
+            else
+                viewModel.setCurrentCityAndWeather("")
         }
     }
 
-    private fun requestPermissions(){
+    private fun requestPermissions() {
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
-            if(it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
+            if (it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
                 isLocationPermissionGranted = true
         }
         permissionLauncher.launch(locationPermissions)

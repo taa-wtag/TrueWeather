@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
-import com.rektstudios.trueweather.data.local.WeatherDayItem
+import com.rektstudios.trueweather.data.local.DailyWeatherItem
 import com.rektstudios.trueweather.databinding.ItemForecastTextViewBinding
 import com.rektstudios.trueweather.databinding.ItemTodayTextViewBinding
 import com.rektstudios.trueweather.databinding.ItemWeatherDayBinding
@@ -38,7 +38,7 @@ class WeatherDayAdapter @Inject constructor(
 
     private val differ = AsyncListDiffer(this, WeatherDayAdapterDiffCallback())
 
-    var weatherDayItems: List<WeatherDayItem>
+    var dailyWeatherItems: List<DailyWeatherItem>
         get() = differ.currentList
         set(value) = differ.submitList(value)
 
@@ -63,14 +63,14 @@ class WeatherDayAdapter @Inject constructor(
         }
     }
 
-    override fun getItemCount(): Int { return weatherDayItems.size + VIEW_TYPES - 1 }
+    override fun getItemCount(): Int { return dailyWeatherItems.size + VIEW_TYPES - 1 }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder){
             is TodayTextViewHolder -> {}
             is WeatherHourRecyclerViewHolder -> {}
             is ForecastTextViewHolder -> {}
-            is WeatherDayItemViewHolder -> holder.bind(weatherDayItems[position - VIEW_TYPES + 1],glide)
+            is WeatherDayItemViewHolder -> holder.bind(dailyWeatherItems[position - VIEW_TYPES + 1],glide)
         }
     }
 
