@@ -10,13 +10,13 @@ class CityItemDiffCallback : DiffUtil.ItemCallback<Pair<CityItem,HourlyWeatherIt
         oldItem: Pair<CityItem, HourlyWeatherItem?>,
         newItem: Pair<CityItem, HourlyWeatherItem?>
     ): Boolean {
-        return oldItem.first.cityName == newItem.first.cityName && oldItem.second?.timeEpoch==newItem.second?.timeEpoch
+        return oldItem.first.cityName == newItem.first.cityName || oldItem.first.cityName == null
     }
 
     override fun areContentsTheSame(
         oldItem: Pair<CityItem, HourlyWeatherItem?>,
         newItem: Pair<CityItem, HourlyWeatherItem?>
     ): Boolean {
-        return oldItem.first.cityName == newItem.first.cityName && oldItem.second?.tempC==newItem.second?.tempC && oldItem.second?.timeEpoch==newItem.second?.timeEpoch
+        return oldItem.first.cityName == newItem.first.cityName && oldItem.second?.tempC==newItem.second?.tempC && oldItem.second?.timeEpoch==newItem.second?.timeEpoch || oldItem.first.cityName == null
     }
 }

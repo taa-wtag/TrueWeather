@@ -2,7 +2,6 @@ package com.rektstudios.trueweather.presentation
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.rektstudios.trueweather.MainDispatcherRule
-import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.repository.FakeCityRepository
 import com.rektstudios.trueweather.data.repository.FakeRealmDao
 import com.rektstudios.trueweather.data.repository.FakePrefsRepository
@@ -25,7 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class CountryDataViewModelTest {
+class CityViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -68,30 +67,30 @@ class CountryDataViewModelTest {
 
     @Test
     fun `addCity - checks added to cache`() = runTest{
-        val city = CityItem("Dhaka, India")
-        viewModel.addCity(city.cityName)
+        val city = "Dhaka, India"
+         viewModel.addCity(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = fakeRealmDao.getCity(city.cityName)
-        Assert.assertEquals(city.cityName,testCity?.cityName)
+        val testCity = fakeRealmDao.getCity(city)
+        Assert.assertEquals(city,testCity?.cityName)
     }
 
     @Test
     fun `addCity - checks cities flow updated`() = runTest{
-        val city = CityItem("Dhaka, India")
-        viewModel.addCity(city.cityName)
+        val city = "Dhaka, India"
+        viewModel.addCity(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity= viewModel.cityList.firstOrNull()?.firstOrNull()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        Assert.assertEquals(city.cityName,testCity?.cityName)
+        Assert.assertEquals(city,testCity?.cityName)
     }
 
     @Test
     fun `deleteCity - checks deleted from cache`() = runTest{
-        val city = CityItem("Dhaka, India")
-        viewModel.addCity(city.cityName)
-        viewModel.deleteCity(city.cityName)
+        val city = "Dhaka, India"
+        viewModel.addCity(city)
+        viewModel.deleteCity(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = fakeRealmDao.getCity(city.cityName)
+        val testCity = fakeRealmDao.getCity(city)
         Assert.assertEquals(null,testCity)
     }
 

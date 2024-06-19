@@ -13,15 +13,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.tabs.TabLayoutMediator
 import com.rektstudios.trueweather.databinding.FragmentWeatherBinding
+import com.rektstudios.trueweather.domain.util.TimeUtil.Companion.getCurrentTime
 import com.rektstudios.trueweather.presentation.adapters.CityCardAdapter
-import com.rektstudios.trueweather.presentation.adapters.WeatherDayAdapter
+import com.rektstudios.trueweather.presentation.adapters.DailyWeatherAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
 
@@ -37,7 +36,7 @@ class WeatherFragment : Fragment() {
     )
 
     @Inject
-    lateinit var weatherDayAdapter: WeatherDayAdapter
+    lateinit var dailyWeatherAdapter: DailyWeatherAdapter
 
     @Inject
     lateinit var cityCardAdapter: CityCardAdapter
@@ -72,37 +71,24 @@ class WeatherFragment : Fragment() {
     private fun subscribeToObservers() {
         cityCardAdapter.navigateToCityFragment =
             { findNavController().navigate(WeatherFragmentDirections.actionWeatherFragmentToCitiesFragment()) }
-        weatherDayAdapter.registerAdapterDataObserver(
-            object : AdapterDataObserver() {
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    super.onItemRangeInserted(positionStart, itemCount)
-                    binding.recyclerViewWeatherDayItem.smoothScrollToPosition(0)
-                }
-            }
-        )
-        cityCardAdapter.registerAdapterDataObserver(
-            object : AdapterDataObserver() {
-
-            }
-        )
         viewLifecycleOwner.lifecycleScope.launch {
             launch {
                 viewModel.currentCityDailyWeatherForecast.collect {
-                    weatherDayAdapter.dailyWeatherItems = if (it.isNotEmpty())
+                    dailyWeatherAdapter.dailyWeatherItems = if (it.isNotEmpty())
                         it.sortedBy { item -> item.dateEpoch }
                     else emptyList()
                 }
             }
             launch {
                 viewModel.currentCityHourlyWeatherForecast.collect {
-                    weatherDayAdapter.weatherHourAdapter.hourlyWeatherItems =
+                    dailyWeatherAdapter.hourlyWeatherAdapter.hourlyWeatherItems =
                         if (it.isNotEmpty()) it
                             .filter { item ->
                                 item.timeString?.substring(11, 13)?.toInt()?.let { it1 ->
                                     it.first().timeString?.substring(11, 13)?.toInt()
                                         ?.let { it2 -> it1 > it2 }
                                 } == true || (item.timeString?.substring(11, 13) == "00" &&
-                                        item.timeEpoch?.let { it1 -> it1 > Calendar.getInstance().timeInMillis / 1000L } == true)
+                                        item.timeEpoch?.let { it1 -> it1 > getCurrentTime() } == true)
                             }
                         else emptyList()
                 }
@@ -123,7 +109,7 @@ class WeatherFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.recyclerViewWeatherDayItem.apply {
-            adapter = weatherDayAdapter
+            adapter = dailyWeatherAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
     }
@@ -136,12 +122,13 @@ class WeatherFragment : Fragment() {
         binding.apply {
             TabLayoutMediator(tabLayoutViewPagerDots, viewPagerCityCard) { _, _ -> }.attach()
         }
+        binding.viewPagerCityCard.setCurrentItem(0, false)
     }
 
     private val pageChangedCallback = object : OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
-            if (position != cityCardAdapter.cityItems.size)
+            if (position != 0)
                 cityCardAdapter.cityItems[position].first.cityName?.let {
                     viewModel.setCurrentCityAndWeather(it)
                 }

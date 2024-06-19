@@ -22,33 +22,33 @@ class LocationTrackerImpl @Inject constructor(
     @SuppressLint("MissingPermission")
     override suspend fun getCurrentLocation(): Pair<Double, Double>? {
 
-        return if(checkLocationPermissionsGranted()) null
-        else suspendCancellableCoroutine {cont ->
+        return if(checkLocationPermissionsNotGranted()) null
+        else suspendCancellableCoroutine {cancellableContinuation ->
             locationClient
                 .lastLocation.apply {
                     if (isComplete) {
                         if (isSuccessful && result!=null) {
-                            cont.resume(Pair(result.latitude, result.longitude))
+                            cancellableContinuation.resume(Pair(result.latitude, result.longitude))
                         } else {
-                            cont.resume(null)
+                            cancellableContinuation.resume(null)
                         }
                         return@suspendCancellableCoroutine
                     }
                 }
                 .addOnSuccessListener {location: Location? ->
-                    if (location!=null) cont.resume(Pair(location.latitude,location.longitude))
-                    else cont.resume(null)
+                    if (location!=null) cancellableContinuation.resume(Pair(location.latitude,location.longitude))
+                    else cancellableContinuation.resume(null)
                 }
                 .addOnCanceledListener {
-                    cont.cancel()
+                    cancellableContinuation.cancel()
                 }
                 .addOnFailureListener {
-                    cont.resume(null)
+                    cancellableContinuation.resume(null)
                 }
         }
     }
 
-    private fun checkLocationPermissionsGranted(): Boolean{
+    private fun checkLocationPermissionsNotGranted(): Boolean{
         val hasAccessFineLocationPermission = ContextCompat.checkSelfPermission(
             application,
             Manifest.permission.ACCESS_FINE_LOCATION

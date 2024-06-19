@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.data.repository
 
+import androidx.datastore.preferences.core.Preferences
 import com.rektstudios.trueweather.domain.repository.IPrefsRepository
 import com.rektstudios.trueweather.domain.util.Constants.KEY_CELSIUS
 import com.rektstudios.trueweather.domain.util.Constants.KEY_CITY_NAME
@@ -13,7 +14,7 @@ class FakePrefsRepository:IPrefsRepository {
     private val celsius = MutableStateFlow("true")
     private val cityName = MutableStateFlow("Tokyo, Japan")
 
-    override suspend fun saveValue(key: String, value: String) {
+    override suspend fun saveValue(key: Preferences.Key<String>, value: String) {
         when (key){
             KEY_METRIC -> metric.emit(value)
             KEY_CELSIUS -> celsius.emit(value)
@@ -21,7 +22,7 @@ class FakePrefsRepository:IPrefsRepository {
         }
     }
 
-    override suspend fun getObservableValue(key: String): Flow<String> {
+    override suspend fun getObservableValue(key: Preferences.Key<String>): Flow<String> {
         return when (key){
             KEY_METRIC -> metric
             KEY_CELSIUS -> celsius

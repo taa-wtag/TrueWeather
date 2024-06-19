@@ -13,17 +13,16 @@ import com.rektstudios.trueweather.databinding.ItemTodayTextViewBinding
 import com.rektstudios.trueweather.databinding.ItemWeatherDayBinding
 import javax.inject.Inject
 
-private const val VIEW_TYPES = 4
 private const val VIEW_TYPE_TODAY_TEXT = 0
 private const val VIEW_TYPE_WEATHER_HOUR_RECYCLER_VIEW = 1
 private const val VIEW_TYPE_FORECAST_TEXT = 2
 private const val VIEW_TYPE_WEATHER_DAY_ITEM = 3
-class WeatherDayAdapter @Inject constructor(
+class DailyWeatherAdapter @Inject constructor(
     private val glide: RequestManager
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     @Inject
-    lateinit var weatherHourAdapter: WeatherHourAdapter
+    lateinit var hourlyWeatherAdapter: HourlyWeatherAdapter
     inner class TodayTextViewHolder(binding: ItemTodayTextViewBinding) : RecyclerView.ViewHolder(binding.root)
     inner class ForecastTextViewHolder(binding: ItemForecastTextViewBinding) : RecyclerView.ViewHolder(binding.root)
     inner class WeatherHourRecyclerViewHolder(recyclerView: RecyclerView) : RecyclerView.ViewHolder(recyclerView)
@@ -36,11 +35,11 @@ class WeatherDayAdapter @Inject constructor(
         }
     }
 
-    private val differ = AsyncListDiffer(this, WeatherDayAdapterDiffCallback())
+    private val differ = AsyncListDiffer(this, DailyWeatherAdapterDiffCallback())
 
     var dailyWeatherItems: List<DailyWeatherItem>
         get() = differ.currentList
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(listOf(DailyWeatherItem(0),DailyWeatherItem(),DailyWeatherItem(0)) + value)
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -58,19 +57,19 @@ class WeatherDayAdapter @Inject constructor(
             }
             else -> {
                 val binding = ItemWeatherDayBinding.inflate(LayoutInflater.from(parent.context), parent,false)
-                WeatherDayItemViewHolder(binding)
+                DailyWeatherItemViewHolder(binding)
             }
         }
     }
 
-    override fun getItemCount(): Int { return dailyWeatherItems.size + VIEW_TYPES - 1 }
+    override fun getItemCount(): Int { return dailyWeatherItems.size  }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder){
             is TodayTextViewHolder -> {}
             is WeatherHourRecyclerViewHolder -> {}
             is ForecastTextViewHolder -> {}
-            is WeatherDayItemViewHolder -> holder.bind(dailyWeatherItems[position - VIEW_TYPES + 1],glide)
+            is DailyWeatherItemViewHolder -> holder.bind(dailyWeatherItems[position],glide)
         }
     }
 
@@ -84,7 +83,7 @@ class WeatherDayAdapter @Inject constructor(
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         }
         recyclerView.setPadding(10,0,10,0)
-        recyclerView.adapter = weatherHourAdapter
+        recyclerView.adapter = hourlyWeatherAdapter
         return recyclerView
     }
 

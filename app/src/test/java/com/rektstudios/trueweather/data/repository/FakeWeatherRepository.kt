@@ -223,12 +223,12 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
     override suspend fun getWeatherForecastInDaysFromCache(
         city: String,
         days: Int
-    ): Flow<List<DailyWeatherItem>>? = realmDao.getCityWeatherForecastInDays(city)
+    ): Flow<List<DailyWeatherItem>> = realmDao.getCityWeatherForecastInDays(city)
 
     override suspend fun getWeatherForecastInHoursFromCache(
         city: String,
         days: Int
-    ): Flow<List<HourlyWeatherItem>>? = realmDao.getCityWeatherForecastInHours(city)
+    ): Flow<List<HourlyWeatherItem>> = realmDao.getCityWeatherForecastInHours(city)
 
     override suspend fun <T> addWeather(city: String, weather: T) = realmDao.addWeather(city,weather)
 

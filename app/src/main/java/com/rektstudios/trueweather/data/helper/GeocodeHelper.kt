@@ -12,7 +12,7 @@ class GeocodeHelper @Inject constructor(private val context: Context): IGeocodeH
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             var cityName = ""
             Geocoder(context, Locale.getDefault()).getFromLocation(lat, lon, 1) {
-                cityName = it[0].locality + ", " + it[0].countryName
+                it?.let{cityName = it[0].locality + ", " + it[0].countryName}
             }
             cityName
         }

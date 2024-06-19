@@ -24,40 +24,41 @@ class CityViewModel @Inject constructor(
     private val getCityListUseCase: GetCityListUseCase,
     private val getCitySuggestionsUseCase: GetCitySuggestionsUseCase,
     private val getCurrentWeatherUseCase: GetCurrentWeatherUseCase
-): ViewModel() {
+) : ViewModel() {
     val cityList = MutableStateFlow<List<CityItem>>(emptyList())
-    val currentWeatherForEachCity = MutableStateFlow<List<HourlyWeatherItem>>(emptyList())
-    var suggestedCities =  MutableLiveData<List<String>>(emptyList())
+    val currentWeatherForEachCity = MutableStateFlow<List<HourlyWeatherItem?>>(emptyList())
+    var suggestedCities = MutableLiveData<List<String>>(emptyList())
         private set
     val isMetric = MutableStateFlow<Boolean?>(null)
     val isCelsius = MutableStateFlow<Boolean?>(null)
 
     init {
         viewModelScope.launch {
-            launch {
-                getCityListUseCase().collect{ cityList.value = it }
-            }
-            launch{
-                cityList.collect{
-                    getCurrentWeatherUseCase(it).collect(currentWeatherForEachCity)
-                }
-            }
-            launch { userPrefsUseCase.getIsCelsius().collect(isCelsius)}
-            launch { userPrefsUseCase.getIsMetric().collect(isMetric)}
+            launch { getCityList() }
+            launch { userPrefsUseCase.getIsCelsius().collect(isCelsius) }
+            launch { userPrefsUseCase.getIsMetric().collect(isMetric) }
         }
     }
 
     fun searchCities(query: String) {
-        if(query.isEmpty()) return
+        if (query.isEmpty()) return
         viewModelScope.launch {
             val result = getCitySuggestionsUseCase(query)
             suggestedCities.postValue(result)
         }
     }
 
+    private suspend fun getCityList() {
+        getCityListUseCase().collect {
+            cityList.value = it
+            getCurrentWeatherUseCase(it).collect(currentWeatherForEachCity)
+        }
+    }
+
 
     fun addCity(city: String) = viewModelScope.launch {
         addCityUseCase(city)
+        getCityList()
     }
 
     fun deleteCity(city: String) = viewModelScope.launch {

@@ -25,7 +25,7 @@ class CityCardAdapter @Inject constructor(
     }
     override fun getItemViewType(position: Int): Int {
         return when (position) {
-            cityItems.size -> VIEW_TYPE_ADD
+            0 -> VIEW_TYPE_ADD
             else -> VIEW_TYPE_CITY
         }
     }
@@ -34,7 +34,7 @@ class CityCardAdapter @Inject constructor(
 
     var cityItems: List<Pair<CityItem,HourlyWeatherItem?>>
         get() = differ.currentList
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(listOf(Pair(CityItem(),null))+value.reversed())
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when(viewType){
             VIEW_TYPE_ADD -> {
@@ -50,7 +50,7 @@ class CityCardAdapter @Inject constructor(
     }
 
     override fun getItemCount(): Int {
-        return cityItems.size+1
+        return cityItems.size
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {

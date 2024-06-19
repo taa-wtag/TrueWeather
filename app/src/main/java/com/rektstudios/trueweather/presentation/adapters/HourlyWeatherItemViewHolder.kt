@@ -9,7 +9,7 @@ import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.databinding.ItemWeatherHourBinding
 import com.rektstudios.trueweather.domain.util.WeatherConditionMapperUtil.Companion.getShortCondition
 
-class WeatherHourItemViewHolder(private val binding: ItemWeatherHourBinding): RecyclerView.ViewHolder(binding.root){
+class HourlyWeatherItemViewHolder(private val binding: ItemWeatherHourBinding): RecyclerView.ViewHolder(binding.root){
     @SuppressLint("ResourceAsColor")
     fun bind(hourlyWeatherItem: HourlyWeatherItem, glide: RequestManager, position: Int){
         if(hourlyWeatherItem.isValid && hourlyWeatherItem.isLoaded) {

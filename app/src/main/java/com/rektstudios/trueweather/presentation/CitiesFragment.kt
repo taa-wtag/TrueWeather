@@ -12,7 +12,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.core.widget.addTextChangedListener
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -93,19 +92,12 @@ class CitiesFragment : Fragment() {
         }
         searchCityAdapter.setOnItemClickListener {
             viewModel.addCity(it)
+            searchCityAdapter.cityItems= emptyList()
             binding.editTextSearchCity.text?.clear()
             binding.cardViewSearchCityModal.visibility = GONE
         }
     }
     private fun subscribeToObservers() {
-        cityItemAdapter.registerAdapterDataObserver(
-            object: RecyclerView.AdapterDataObserver(){
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    super.onItemRangeInserted(positionStart,itemCount)
-                    binding.recyclerViewCityItem.smoothScrollToPosition(0)
-                }
-            }
-        )
         viewLifecycleOwner.lifecycleScope.launch {
             launch {
                 combine(viewModel.cityList,viewModel.currentWeatherForEachCity){cities, weathers->

@@ -9,25 +9,25 @@ import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.databinding.ItemWeatherHourBinding
 import javax.inject.Inject
 
-class WeatherHourAdapter @Inject constructor(
+class HourlyWeatherAdapter @Inject constructor(
     private val glide: RequestManager
-):RecyclerView.Adapter<WeatherHourItemViewHolder>() {
+):RecyclerView.Adapter<HourlyWeatherItemViewHolder>() {
 
-    private val differ = AsyncListDiffer(this, WeatherHourAdapterDiffCallback())
+    private val differ = AsyncListDiffer(this, HourlyWeatherAdapterDiffCallback())
 
     var hourlyWeatherItems: List<HourlyWeatherItem>
         get() = differ.currentList
         set(value) = differ.submitList(value)
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherHourItemViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyWeatherItemViewHolder {
         val binding = ItemWeatherHourBinding.inflate(LayoutInflater.from(parent.context), parent,false)
-        return WeatherHourItemViewHolder(binding)
+        return HourlyWeatherItemViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
         return hourlyWeatherItems.size
     }
 
-    override fun onBindViewHolder(holder: WeatherHourItemViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: HourlyWeatherItemViewHolder, position: Int) {
         holder.bind(hourlyWeatherItems[position],glide, position)
     }
 }

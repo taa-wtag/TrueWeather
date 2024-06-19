@@ -8,7 +8,6 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -17,8 +16,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.rektstudios.trueweather.R
 import com.rektstudios.trueweather.data.helper.GeocodeHelper
+import com.rektstudios.trueweather.data.local.DBMigration
 import com.rektstudios.trueweather.data.local.IRealmDao
-import com.rektstudios.trueweather.data.local.RealmDaoImpl
 import com.rektstudios.trueweather.data.remote.MapBoxApiService
 import com.rektstudios.trueweather.data.remote.WeatherApiService
 import com.rektstudios.trueweather.domain.util.Constants.MAPBOX_BASE_URL
@@ -29,6 +28,7 @@ import com.rektstudios.trueweather.domain.repository.IPrefsRepository
 import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import com.rektstudios.trueweather.data.repository.PrefsRepositoryImpl
 import com.rektstudios.trueweather.data.repository.WeatherRepositoryImpl
+import com.rektstudios.trueweather.di.DaoModule.Companion.schemaVersion
 import com.rektstudios.trueweather.domain.helper.IGeocodeHelper
 import com.rektstudios.trueweather.domain.location.ILocationTracker
 import com.rektstudios.trueweather.domain.usecase.AddCityUseCase
@@ -40,6 +40,7 @@ import com.rektstudios.trueweather.domain.usecase.GetCitySuggestionsUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCurrentWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
+import com.rektstudios.trueweather.domain.util.Constants.USER_PREFERENCES
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -53,9 +54,6 @@ import kotlinx.coroutines.SupervisorJob
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
-
-private const val USER_PREFERENCES = "user_preferences"
-private val Context.prefsDataStore by preferencesDataStore(name = USER_PREFERENCES)
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -113,17 +111,12 @@ object AppModule {
         val realmConfiguration = RealmConfiguration
             .Builder()
             .name("db_weather_app")
-            .allowQueriesOnUiThread(true)
-            .allowWritesOnUiThread(true)
+            .schemaVersion(schemaVersion)
+            .migration(DBMigration())
             .build()
         Realm.setDefaultConfiguration(realmConfiguration)
         return Realm.getDefaultInstance()
     }
-    @Singleton
-    @Provides
-    fun provideRealmDao(
-        realm: Realm
-    ): IRealmDao = RealmDaoImpl(realm)
 
     @Provides
     @Singleton

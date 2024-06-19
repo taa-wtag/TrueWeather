@@ -3,6 +3,8 @@ package com.rektstudios.trueweather.data.repository
 import com.rektstudios.trueweather.data.local.CityItem
 import com.rektstudios.trueweather.data.local.IRealmDao
 import com.rektstudios.trueweather.data.remote.MapBoxApiService
+import com.rektstudios.trueweather.data.remote.MapboxQuery
+import com.rektstudios.trueweather.data.remote.toMap
 import com.rektstudios.trueweather.data.reponse.mapbox.SearchResponse
 import com.rektstudios.trueweather.domain.repository.ICityRepository
 import com.rektstudios.trueweather.domain.util.CheckResponseUtil
@@ -21,7 +23,7 @@ class CityRepositoryImpl @Inject constructor(
 
     override suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse> = withContext(Dispatchers.IO){
         try {
-            CheckResponseUtil(mapBoxApiService.searchPlacesSuggest(searchQuery, USER_UUID)).checkResponse()
+            CheckResponseUtil(mapBoxApiService.searchPlaceSuggestions(MapboxQuery(searchQuery = searchQuery, sessionToken = USER_UUID).toMap())).checkResponse()
         } catch(e: Exception) {
             Resource.Error(SERVER_ERROR_MESSAGE, null)
         }

@@ -36,7 +36,7 @@ class WeatherRepositoryImpl @Inject constructor(
             } catch (e: Exception) {Resource.Error(SERVER_ERROR_MESSAGE, null)}
         }
 
-    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem> = realmDao.getCityWeatherCurrent(city)
+    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem?> = realmDao.getCityWeatherCurrent(city)
 
     override suspend fun getWeatherForecastInDaysFromCache(city: String, days: Int): Flow<List<DailyWeatherItem>> = realmDao.getCityWeatherForecastInDays(city)
 

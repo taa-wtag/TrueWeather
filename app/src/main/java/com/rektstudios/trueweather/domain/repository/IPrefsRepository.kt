@@ -1,8 +1,9 @@
 package com.rektstudios.trueweather.domain.repository
 
+import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
 
 interface IPrefsRepository {
-    suspend fun saveValue(key: String, value: String)
-    suspend fun getObservableValue(key: String): Flow<String?>
+    suspend fun saveValue(key: Preferences.Key<String>, value: String)
+    suspend fun getObservableValue(key: Preferences.Key<String>): Flow<String?>
 }

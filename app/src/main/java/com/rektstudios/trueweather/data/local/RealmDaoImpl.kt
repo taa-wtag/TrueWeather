@@ -2,6 +2,7 @@ package com.rektstudios.trueweather.data.local
 
 import com.rektstudios.trueweather.domain.util.Constants.FORECAST_MIN_TIME_PAST
 import com.rektstudios.trueweather.domain.util.Constants.MAX_BACKGROUND_COUNT
+import com.rektstudios.trueweather.domain.util.TimeUtil.Companion.getCurrentTime
 import io.realm.Realm
 import io.realm.RealmChangeListener
 import io.realm.RealmQuery
@@ -11,9 +12,10 @@ import io.realm.kotlin.executeTransactionAwait
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import java.util.Calendar
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Random
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 class RealmDaoImpl @Inject constructor(
     private val realm: Realm
@@ -25,7 +27,6 @@ class RealmDaoImpl @Inject constructor(
                     backgroundColor = Random().nextInt(MAX_BACKGROUND_COUNT-1)+1
                 })
             }catch (_: Exception){}
-
         }
     }
 
@@ -44,10 +45,10 @@ class RealmDaoImpl @Inject constructor(
                                     .where()
                                     ?.equalTo("timeEpoch", weather.timeEpoch)
                                     ?.or()
-                                    ?.lessThan("timeEpoch", Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
+                                    ?.lessThan("timeEpoch", getCurrentTime() - FORECAST_MIN_TIME_PAST)
                                     ?.findAll()
                                     ?.deleteAllFromRealm()
-                            if(weather.timeEpoch!!>Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
+                            if (weather.timeEpoch?.let {item ->  item > getCurrentTime() - FORECAST_MIN_TIME_PAST} == true)
                                 cityItem.weatherEveryHour.add(it.copyToRealm(weather))
                         }
 
@@ -56,43 +57,43 @@ class RealmDaoImpl @Inject constructor(
                                     .where()
                                     ?.equalTo("dateEpoch", weather.dateEpoch)
                                     ?.or()
-                                    ?.lessThan("dateEpoch", Calendar.getInstance().timeInMillis/1000L-FORECAST_MIN_TIME_PAST)
+                                    ?.lessThan("dateEpoch", getCurrentTime() -FORECAST_MIN_TIME_PAST)
                                     ?.findAll()
                                     ?.deleteAllFromRealm()
-                            if(weather.dateEpoch!!>Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
+                            if (weather.dateEpoch?.let {item ->  item > getCurrentTime() - FORECAST_MIN_TIME_PAST} == true)
                                 cityItem.weatherEveryDay.add(it.copyToRealm(weather))
                         }
                         is List<*> -> when{
                             weather.isListOf<HourlyWeatherItem>() -> {
-                                weather.forEach {weatherHour ->
-                                    if(weatherHour is HourlyWeatherItem){
-                                    cityItem.weatherEveryHour
-                                        .where()
-                                        ?.equalTo("timeEpoch", weatherHour.timeEpoch)
-                                        ?.or()
-                                        ?.lessThan("timeEpoch", Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
-                                        ?.findAll()
-                                        ?.deleteAllFromRealm()
-                                    if(weatherHour.timeEpoch!!>Calendar.getInstance().timeInMillis/1000L- FORECAST_MIN_TIME_PAST)
-                                        cityItem.weatherEveryHour.add(it.copyToRealm(weatherHour))
+                                weather.forEach {hourlyWeatherItem ->
+                                    if(hourlyWeatherItem is HourlyWeatherItem){
+                                        cityItem.weatherEveryHour
+                                            .where()
+                                            ?.equalTo("timeEpoch", hourlyWeatherItem.timeEpoch)
+                                            ?.or()
+                                            ?.lessThan("timeEpoch", getCurrentTime() - FORECAST_MIN_TIME_PAST)
+                                            ?.findAll()
+                                            ?.deleteAllFromRealm()
+                                        if (hourlyWeatherItem.timeEpoch?.let {item ->  item > getCurrentTime() - FORECAST_MIN_TIME_PAST} == true)
+                                            cityItem.weatherEveryHour.add(it.copyToRealm(hourlyWeatherItem))
                                     }
                                 }
                             }
                             weather.isListOf<DailyWeatherItem>() -> {
-                                weather.forEach { weatherDay ->
-                                    if (weatherDay is DailyWeatherItem) {
+                                weather.forEach { dailyWeatherItem ->
+                                    if (dailyWeatherItem is DailyWeatherItem) {
                                         cityItem.weatherEveryDay
                                             .where()
-                                            ?.equalTo("dateEpoch", weatherDay.dateEpoch)
+                                            ?.equalTo("dateEpoch", dailyWeatherItem.dateEpoch)
                                             ?.or()
                                             ?.lessThan(
                                                 "dateEpoch",
-                                                Calendar.getInstance().timeInMillis / 1000L - FORECAST_MIN_TIME_PAST
+                                                getCurrentTime() - FORECAST_MIN_TIME_PAST
                                             )
                                             ?.findAll()
                                             ?.deleteAllFromRealm()
-                                        if (weatherDay.dateEpoch!! > Calendar.getInstance().timeInMillis / 1000L - FORECAST_MIN_TIME_PAST)
-                                            cityItem.weatherEveryDay.add(it.copyToRealm(weatherDay))
+                                        if (dailyWeatherItem.dateEpoch?.let {item ->  item > getCurrentTime() - FORECAST_MIN_TIME_PAST} == true)
+                                            cityItem.weatherEveryDay.add(it.copyToRealm(dailyWeatherItem))
                                     }
                                 }
                             }
@@ -102,7 +103,9 @@ class RealmDaoImpl @Inject constructor(
             }
     }
 
-    inline fun <reified T> List<*>.isListOf(): Boolean {
+
+
+    private inline fun <reified T> List<*>.isListOf(): Boolean {
         return all { it is T }
     }
 
@@ -118,7 +121,23 @@ class RealmDaoImpl @Inject constructor(
     }
 
 
-    override fun getCity(city: String): CityItem? = getCityAsQuery(realm,city).findFirst()
+    override suspend fun getCity(city: String): CityItem? {
+        val query = realm.where(CityItem::class.java)
+            .equalTo("cityName", city)
+            .findFirstAsync()
+        return suspendCancellableCoroutine { continuation ->
+            query.addChangeListener { result: CityItem ->
+                if (result.isLoaded) {
+                    query.removeAllChangeListeners()
+                    if (result.isValid) {
+                        continuation.resume(result)
+                    } else {
+                        continuation.resume(null)
+                    }
+                }
+            }
+        }
+    }
 
     private fun getCityAsQuery(iRealm: Realm, cityName: String = ""): RealmQuery<CityItem> = iRealm.where(CityItem::class.java).equalTo("cityName", cityName)
 
@@ -135,7 +154,7 @@ class RealmDaoImpl @Inject constructor(
                 currentWeatherItem = cityItem
                     .weatherEveryHour
                     .where()
-                    ?.lessThanOrEqualTo("timeEpoch", Calendar.getInstance().timeInMillis / 1000)
+                    ?.lessThanOrEqualTo("timeEpoch", getCurrentTime())
                     ?.sort("timeEpoch", Sort.DESCENDING)
                     ?.findFirstAsync()
                 currentWeatherItem?.addChangeListener(currentWeatherItemListener)
@@ -159,14 +178,14 @@ class RealmDaoImpl @Inject constructor(
                 dailyWeatherItemList = cityItem
                     ?.weatherEveryDay
                     ?.where()
-                    ?.greaterThan("dateEpoch", Calendar.getInstance().timeInMillis / 1000)
+                    ?.greaterThan("dateEpoch", getCurrentTime())
                     ?.sort("dateEpoch")
                     ?.findAllAsync()
                 dailyWeatherItemList?.addChangeListener(dailyWeatherItemListener)
             }
         })
         awaitClose {
-            dailyWeatherItemList?.removeAllChangeListeners()
+            dailyWeatherItemList?.removeChangeListener(dailyWeatherItemListener)
             cityItem.removeAllChangeListeners()
         }
     }
@@ -182,12 +201,9 @@ class RealmDaoImpl @Inject constructor(
                 hourlyWeatherItemList = cityItem
                     ?.weatherEveryHour
                     ?.where()
-                    ?.greaterThan("timeEpoch", (Calendar.getInstance().timeInMillis / 1000))
+                    ?.greaterThan("timeEpoch", getCurrentTime())
                     ?.and()
-                    ?.lessThan(
-                        "timeEpoch",
-                        (Calendar.getInstance().timeInMillis / 1000) + 86400
-                    )
+                    ?.lessThan("timeEpoch", getCurrentTime() + 86400)
                     ?.sort("timeEpoch")
                     ?.findAllAsync()
                 hourlyWeatherItemList?.addChangeListener(hourlyWeatherItemListener)
