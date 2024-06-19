@@ -105,9 +105,6 @@ class CitiesFragment : Fragment() {
                 }.collect{
                     cityItemAdapter.cityItems = it
                 }
-//                viewModel.cityList.collect {
-//                    if (it.isNotEmpty()) { cityItemAdapter.cityItems = it.map { cityItem ->Pair(cityItem, cityItem.weatherEveryHour.firstOrNull()) } }
-//                }
             }
             launch {
                 viewModel.suggestedCities.observe(viewLifecycleOwner) {
