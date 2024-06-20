@@ -5,11 +5,11 @@ import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
 
 fun SearchResponse.toListCityName(): List<String> =
     citySuggestions?.map { city ->
-        city.cityName + ", "+city.placeData?.countryData?.countryName
+        city.cityName + ", " + city.placeData?.countryData?.countryName
     } ?: emptyList()
 
 fun PlaceResponse.toListCityName(): List<String> =
-    mapNotNull {city ->
-        city.cityName + ", " +city.countryName
+    mapNotNull { city ->
+        city.cityName + ", " + city.countryName
     }
 

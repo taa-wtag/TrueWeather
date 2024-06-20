@@ -35,7 +35,7 @@ class WeatherViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private lateinit var viewModel:WeatherViewModel
+    private lateinit var viewModel: WeatherViewModel
 
 
     private lateinit var userPrefsUseCase: UserPrefsUseCase
@@ -64,9 +64,21 @@ class WeatherViewModelTest {
         getCityListUseCase = GetCityListUseCase(fakeCityRepository)
         getCurrentWeatherUseCase = GetCurrentWeatherUseCase(fakeWeatherRepository)
         getForecastWeatherUseCase = GetForecastWeatherUseCase(fakeWeatherRepository)
-        getCityNameFromLocationUseCase = GetCityNameFromLocationUseCase(fakeWeatherRepository,fakeGeocodeHelper)
-        currentCityUseCase = CurrentCityUseCase(fakeCityRepository,fakePrefsRepository,fakeLocationTracker,getCityNameFromLocationUseCase)
-        viewModel = WeatherViewModel(userPrefsUseCase,getCityListUseCase, getCurrentWeatherUseCase, getForecastWeatherUseCase, currentCityUseCase)
+        getCityNameFromLocationUseCase =
+            GetCityNameFromLocationUseCase(fakeWeatherRepository, fakeGeocodeHelper)
+        currentCityUseCase = CurrentCityUseCase(
+            fakeCityRepository,
+            fakePrefsRepository,
+            fakeLocationTracker,
+            getCityNameFromLocationUseCase
+        )
+        viewModel = WeatherViewModel(
+            userPrefsUseCase,
+            getCityListUseCase,
+            getCurrentWeatherUseCase,
+            getForecastWeatherUseCase,
+            currentCityUseCase
+        )
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
     }
 
@@ -75,27 +87,28 @@ class WeatherViewModelTest {
     }
 
     @Test
-    fun `toggleMetric - changes value in user prefs`() = runTest{
+    fun `toggleMetric - changes value in user prefs`() = runTest {
         val flag = viewModel.isMetric.getOrAwaitValue()
         viewModel.toggleMetric()
         viewModel.isMetric.getOrAwaitValue()
-        assertEquals(!flag!!,viewModel.isMetric.value)
+        assertEquals(!flag!!, viewModel.isMetric.value)
     }
+
     @Test
-    fun `toggleCelsius - changes value in user prefs`()= runTest{
+    fun `toggleCelsius - changes value in user prefs`() = runTest {
         val flag = viewModel.isCelsius.getOrAwaitValue()
         viewModel.toggleCelsius()
         viewModel.isCelsius.getOrAwaitValue()
-        assertEquals(!flag!!,viewModel.isCelsius.value)
+        assertEquals(!flag!!, viewModel.isCelsius.value)
     }
 
     @Test
-    fun `init - current city is set from prefs data store`()= runTest{
-        assertEquals("Tokyo, Japan", viewModel.currentCity )
+    fun `init - current city is set from prefs data store`() = runTest {
+        assertEquals("Tokyo, Japan", viewModel.currentCity)
     }
 
     @Test
-    fun `setCurrentCityAndWeather - current city is updated if city in realm`()= runTest{
+    fun `setCurrentCityAndWeather - current city is updated if city in realm`() = runTest {
         val city = "Sapporo, Japan"
         fakeRealmDao.addCity(city)
         viewModel.setCurrentCityAndWeather(city)
@@ -104,52 +117,57 @@ class WeatherViewModelTest {
     }
 
     @Test
-    fun `setCurrentCityAndWeather - current city is not updated if city not in realm`()= runTest{
+    fun `setCurrentCityAndWeather - current city is not updated if city not in realm`() = runTest {
         val city = "Sapporo, Japan"
         viewModel.setCurrentCityAndWeather(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        assertEquals("Tokyo, Japan", viewModel.currentCity )
+        assertEquals("Tokyo, Japan", viewModel.currentCity)
     }
 
 
     @Test
-    fun `init - forecast city weather is set automatically`()= runTest{
+    fun `init - forecast city weather is set automatically`() = runTest {
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[0].forecastData?.dailyForecastDataList?.get(0)
-                ?.toDailyWeatherItem()!!.conditionText,
+            fakeWeatherRepository.fakeForecastResponses[0].forecastData?.dailyForecastDataList?.get(
+                0
+            )?.toDailyWeatherItem()!!.conditionText,
             viewModel.currentCityDailyWeatherForecast.firstOrNull()?.first()?.conditionText
         )
         assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[0].forecastData?.dailyForecastDataList?.get(0)
-                ?.toHourlyWeatherItem()?.get(0)!!.conditionText,
+            fakeWeatherRepository.fakeForecastResponses[0].forecastData?.dailyForecastDataList?.get(
+                0
+            )?.toHourlyWeatherItem()?.get(0)!!.conditionText,
             viewModel.currentCityHourlyWeatherForecast.firstOrNull()?.first()?.conditionText
         )
     }
 
     @Test
-    fun `setCurrentCityAndWeather - forecast city weather is changed on current city changed`()= runTest{
-        val city = "Sapporo, Japan"
-        fakeRealmDao.addCity(city)
-        viewModel.setCurrentCityAndWeather(city)
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[1].forecastData?.dailyForecastDataList?.get(0)
-                ?.toDailyWeatherItem()!!.conditionText,
-            viewModel.currentCityDailyWeatherForecast.firstOrNull()?.first()?.conditionText
-        )
-        assertEquals(
-            fakeWeatherRepository.fakeForecastResponses[1].forecastData?.dailyForecastDataList?.get(0)
-                ?.toHourlyWeatherItem()?.get(0)!!.conditionText,
-            viewModel.currentCityHourlyWeatherForecast.firstOrNull()?.first()?.conditionText
-        )
-    }
+    fun `setCurrentCityAndWeather - forecast city weather is changed on current city changed`() =
+        runTest {
+            val city = "Sapporo, Japan"
+            fakeRealmDao.addCity(city)
+            viewModel.setCurrentCityAndWeather(city)
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            assertEquals(
+                fakeWeatherRepository.fakeForecastResponses[1].forecastData?.dailyForecastDataList?.get(
+                    0
+                )?.toDailyWeatherItem()!!.conditionText,
+                viewModel.currentCityDailyWeatherForecast.firstOrNull()?.first()?.conditionText
+            )
+            assertEquals(
+                fakeWeatherRepository.fakeForecastResponses[1].forecastData?.dailyForecastDataList?.get(
+                    0
+                )?.toHourlyWeatherItem()?.get(0)!!.conditionText,
+                viewModel.currentCityHourlyWeatherForecast.firstOrNull()?.first()?.conditionText
+            )
+        }
 
     @Test
-    fun `setCurrentCityFromGPS - current city is updated`()= runTest{
+    fun `setCurrentCityFromGPS - current city is updated`() = runTest {
         viewModel.setCurrentCityFromGPS()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        assertEquals("Los Angeles, United States", viewModel.currentCity )
+        assertEquals("Los Angeles, United States", viewModel.currentCity)
     }
 
 }

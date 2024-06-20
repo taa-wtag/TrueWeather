@@ -12,8 +12,7 @@ interface WeatherApiService {
 
     @GET("current.json")
     suspend fun getCurrentWeather(
-        @Query("key") apiKey: String = BuildConfig.API_KEY,
-        @Query("q") city: String
+        @Query("key") apiKey: String = BuildConfig.API_KEY, @Query("q") city: String
     ): Response<CurrentWeatherResponse>
 
     @GET("forecast.json")

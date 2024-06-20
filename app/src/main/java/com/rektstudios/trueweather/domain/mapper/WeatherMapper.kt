@@ -20,7 +20,7 @@ fun HourlyWeatherData.toHourlyWeatherItem(): HourlyWeatherItem {
         humidity,
         isDay,
         weatherCondition?.text,
-        "https:"+weatherCondition?.icon,
+        "https:" + weatherCondition?.icon,
     )
 }
 
@@ -46,8 +46,9 @@ fun DailyForecastData.toDailyWeatherItem(): DailyWeatherItem? {
             it.maxWindMph,
             it.avgHumidity,
             it.weatherCondition?.text,
-            "https:"+it.weatherCondition?.icon
-    )}
+            "https:" + it.weatherCondition?.icon
+        )
+    }
 }
 
 

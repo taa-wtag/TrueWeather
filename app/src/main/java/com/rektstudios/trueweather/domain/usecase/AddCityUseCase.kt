@@ -6,5 +6,7 @@ import javax.inject.Inject
 class AddCityUseCase @Inject constructor(
     private val cityRepository: ICityRepository
 ) {
+
     suspend operator fun invoke(city: String) = cityRepository.addCity(city)
+
 }

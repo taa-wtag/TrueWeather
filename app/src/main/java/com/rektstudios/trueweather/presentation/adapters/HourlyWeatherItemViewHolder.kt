@@ -9,15 +9,17 @@ import com.rektstudios.trueweather.data.local.HourlyWeatherItem
 import com.rektstudios.trueweather.databinding.ItemWeatherHourBinding
 import com.rektstudios.trueweather.domain.util.WeatherConditionMapperUtil.Companion.getShortCondition
 
-class HourlyWeatherItemViewHolder(private val binding: ItemWeatherHourBinding): RecyclerView.ViewHolder(binding.root){
+class HourlyWeatherItemViewHolder(private val binding: ItemWeatherHourBinding) :
+    RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("ResourceAsColor")
-    fun bind(hourlyWeatherItem: HourlyWeatherItem, glide: RequestManager, position: Int){
-        if(hourlyWeatherItem.isValid && hourlyWeatherItem.isLoaded) {
-            binding.textViewWeatherHourCardTime.text = hourlyWeatherItem.timeString?.substringAfter(" ")
-            binding.textViewWeatherHourCardCondition.text = hourlyWeatherItem.conditionText?.let { getShortCondition(it) }
+    fun bind(hourlyWeatherItem: HourlyWeatherItem, glide: RequestManager, position: Int) {
+        if (hourlyWeatherItem.isValid && hourlyWeatherItem.isLoaded) {
+            binding.textViewWeatherHourCardTime.text =
+                hourlyWeatherItem.timeString?.substringAfter(" ")
+            binding.textViewWeatherHourCardCondition.text =
+                hourlyWeatherItem.conditionText?.let { getShortCondition(it) }
             binding.imageViewWeatherHourCardCondition
-            glide.load(hourlyWeatherItem.imageUrl)
-                .into(binding.imageViewWeatherHourCardCondition)
+            glide.load(hourlyWeatherItem.imageUrl).into(binding.imageViewWeatherHourCardCondition)
             binding.weatherHourCard.setCardBackgroundColor(
                 ContextCompat.getColor(
                     binding.root.context,

@@ -58,6 +58,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
     @Singleton
     @Provides
     fun providePreferencesDataStore(
@@ -67,7 +68,7 @@ object AppModule {
             corruptionHandler = ReplaceFileCorruptionHandler(
                 produceNewData = { emptyPreferences() }
             ),
-            migrations = listOf(SharedPreferencesMigration(appContext,USER_PREFERENCES)),
+            migrations = listOf(SharedPreferencesMigration(appContext, USER_PREFERENCES)),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = { appContext.preferencesDataStoreFile(USER_PREFERENCES) }
         )
@@ -129,39 +130,40 @@ object AppModule {
     fun provideWeatherRepository(
         weatherApiService: WeatherApiService,
         realmDao: IRealmDao
-    ): IWeatherRepository = WeatherRepositoryImpl(weatherApiService,realmDao)
+    ): IWeatherRepository = WeatherRepositoryImpl(weatherApiService, realmDao)
 
     @Singleton
     @Provides
     fun provideCityRepository(
         mapBoxApiService: MapBoxApiService,
         realmDao: IRealmDao
-    ): ICityRepository = CityRepositoryImpl(mapBoxApiService,realmDao)
+    ): ICityRepository = CityRepositoryImpl(mapBoxApiService, realmDao)
 
     @Singleton
     @Provides
     fun provideAddCityUseCase(
         cityRepository: ICityRepository
-    ):AddCityUseCase = AddCityUseCase(cityRepository)
+    ): AddCityUseCase = AddCityUseCase(cityRepository)
 
     @Singleton
     @Provides
     fun provideDeleteCityUseCase(
         cityRepository: ICityRepository
-    ):DeleteCityUseCase = DeleteCityUseCase(cityRepository)
+    ): DeleteCityUseCase = DeleteCityUseCase(cityRepository)
 
     @Singleton
     @Provides
     fun provideGetCityListUseCase(
         cityRepository: ICityRepository
-    ):GetCityListUseCase = GetCityListUseCase(cityRepository)
+    ): GetCityListUseCase = GetCityListUseCase(cityRepository)
 
     @Singleton
     @Provides
     fun provideGetCityNameFromLocationUseCase(
         weatherRepository: IWeatherRepository,
         geocodeHelper: IGeocodeHelper
-    ):GetCityNameFromLocationUseCase = GetCityNameFromLocationUseCase(weatherRepository, geocodeHelper)
+    ): GetCityNameFromLocationUseCase =
+        GetCityNameFromLocationUseCase(weatherRepository, geocodeHelper)
 
     @Singleton
     @Provides
@@ -189,13 +191,18 @@ object AppModule {
         prefsRepository: IPrefsRepository,
         locationTracker: ILocationTracker,
         getCityNameFromLocationUseCase: GetCityNameFromLocationUseCase
-    ): CurrentCityUseCase = CurrentCityUseCase(cityRepository, prefsRepository, locationTracker, getCityNameFromLocationUseCase)
+    ): CurrentCityUseCase = CurrentCityUseCase(
+        cityRepository,
+        prefsRepository,
+        locationTracker,
+        getCityNameFromLocationUseCase
+    )
 
     @Singleton
     @Provides
     fun provideUserPrefsUseCase(
         prefsRepository: IPrefsRepository
-    ):UserPrefsUseCase = UserPrefsUseCase(prefsRepository)
+    ): UserPrefsUseCase = UserPrefsUseCase(prefsRepository)
 
     @Singleton
     @Provides
@@ -206,4 +213,5 @@ object AppModule {
             .placeholder(R.drawable.ic_image)
             .error(R.drawable.ic_image)
     )
+
 }

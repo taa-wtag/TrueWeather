@@ -8,15 +8,12 @@ import java.util.concurrent.TimeUnit
 
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 suspend fun <T> Flow<T>.getOrAwaitValue(
-    time: Long = 2,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
-    afterCollect: suspend () -> Unit = {}
+    time: Long = 2, timeUnit: TimeUnit = TimeUnit.SECONDS, afterCollect: suspend () -> Unit = {}
 ): T {
     var data: T? = null
 
     val job = CoroutineScope(Dispatchers.Main).launch {
-        this@getOrAwaitValue
-            .onCompletion { if (data == null) throw TimeoutException("Flow value was never emitted.") }
+        this@getOrAwaitValue.onCompletion { if (data == null) throw TimeoutException("Flow value was never emitted.") }
             .collect { value ->
                 data = value
                 cancel()
@@ -34,6 +31,5 @@ suspend fun <T> Flow<T>.getOrAwaitValue(
         job.cancel()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    return data as T
+    @Suppress("UNCHECKED_CAST") return data as T
 }

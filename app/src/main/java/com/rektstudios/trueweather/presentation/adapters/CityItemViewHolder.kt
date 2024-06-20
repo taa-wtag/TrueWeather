@@ -10,7 +10,8 @@ import com.rektstudios.trueweather.databinding.ItemCityCardFragmentBinding
 import com.rektstudios.trueweather.domain.util.CardBackgroundUtil.setCityItemBackground
 import com.rektstudios.trueweather.domain.util.WeatherConditionMapperUtil.Companion.getShortCondition
 
-class CityItemViewHolder(private val binding: ItemCityCardFragmentBinding): RecyclerView.ViewHolder(binding.root) {
+class CityItemViewHolder(private val binding: ItemCityCardFragmentBinding) :
+    RecyclerView.ViewHolder(binding.root) {
     fun bind(
         cityItem: CityItem,
         hourlyWeatherItem: HourlyWeatherItem?,
@@ -18,18 +19,16 @@ class CityItemViewHolder(private val binding: ItemCityCardFragmentBinding): Recy
         listener: ((String) -> Unit)?,
         isDeleteButtonVisible: Boolean,
         toggleDeleteButtonVisibility: () -> Unit
-    ){
+    ) {
         hourlyWeatherItem?.let {
-            if(it.isValid && it.isLoaded) {
-                binding.textViewCityCardFragmentTemperature.text =
-                    it.tempC?.toInt().toString()
+            if (it.isValid && it.isLoaded) {
+                binding.textViewCityCardFragmentTemperature.text = it.tempC?.toInt().toString()
                 binding.textViewCityCardFragmentCondition.text =
                     it.conditionText?.let { it1 -> getShortCondition(it1) }
-                glide.load(it.imageUrl)
-                    .into(binding.imageViewCityCardFragmentCondition)
+                glide.load(it.imageUrl).into(binding.imageViewCityCardFragmentCondition)
             }
         }
-        if(cityItem.isValid && cityItem.isLoaded) {
+        if (cityItem.isValid && cityItem.isLoaded) {
             binding.textViewCityCardFragmentCityName.text = cityItem.cityName?.substringBefore(",")
             binding.textViewCityCardFragmentCountryName.text =
                 cityItem.cityName?.substringAfter(", ")

@@ -6,9 +6,8 @@ import io.realm.annotations.PrimaryKey
 
 
 open class CityItem(
-    @PrimaryKey
-    var cityName: String? = null,
+    @PrimaryKey var cityName: String? = null,
     var backgroundColor: Int? = null,
     var weatherEveryDay: RealmList<DailyWeatherItem> = RealmList(),
     var weatherEveryHour: RealmList<HourlyWeatherItem> = RealmList()
-): RealmObject()
+) : RealmObject()

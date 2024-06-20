@@ -2,5 +2,7 @@ package com.rektstudios.trueweather.domain.location
 
 
 interface ILocationTracker {
-    suspend fun getCurrentLocation(): Pair<Double,Double>?
+
+    suspend fun getCurrentLocation(): Pair<Double, Double>?
+
 }

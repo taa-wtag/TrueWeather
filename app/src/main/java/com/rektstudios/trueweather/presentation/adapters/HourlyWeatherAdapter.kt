@@ -11,15 +11,17 @@ import javax.inject.Inject
 
 class HourlyWeatherAdapter @Inject constructor(
     private val glide: RequestManager
-):RecyclerView.Adapter<HourlyWeatherItemViewHolder>() {
+) : RecyclerView.Adapter<HourlyWeatherItemViewHolder>() {
 
     private val differ = AsyncListDiffer(this, HourlyWeatherAdapterDiffCallback())
 
     var hourlyWeatherItems: List<HourlyWeatherItem>
         get() = differ.currentList
         set(value) = differ.submitList(value)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyWeatherItemViewHolder {
-        val binding = ItemWeatherHourBinding.inflate(LayoutInflater.from(parent.context), parent,false)
+        val binding =
+            ItemWeatherHourBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return HourlyWeatherItemViewHolder(binding)
     }
 
@@ -28,6 +30,6 @@ class HourlyWeatherAdapter @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: HourlyWeatherItemViewHolder, position: Int) {
-        holder.bind(hourlyWeatherItems[position],glide, position)
+        holder.bind(hourlyWeatherItems[position], glide, position)
     }
 }

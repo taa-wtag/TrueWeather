@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import java.util.UUID
 
 object Constants {
+
     const val WEATHER_BASE_URL = "https://api.weatherapi.com/v1/"
     const val MAPBOX_BASE_URL = "https://api.mapbox.com/"
     const val SERVER_ERROR_MESSAGE = "Couldn't reach the server. Check your internet connection"

@@ -17,21 +17,31 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CityRepositoryImpl @Inject constructor(
-    private val mapBoxApiService: MapBoxApiService,
-    private val realmDao: IRealmDao
-): ICityRepository {
+    private val mapBoxApiService: MapBoxApiService, private val realmDao: IRealmDao
+) : ICityRepository {
 
-    override suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse> = withContext(Dispatchers.IO){
-        try {
-            CheckResponseUtil(mapBoxApiService.searchPlaceSuggestions(MapboxQuery(searchQuery = searchQuery, sessionToken = USER_UUID).toMap())).checkResponse()
-        } catch(e: Exception) {
-            Resource.Error(SERVER_ERROR_MESSAGE, null)
+    override suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse> =
+        withContext(Dispatchers.IO) {
+            try {
+                CheckResponseUtil(
+                    mapBoxApiService.searchPlaceSuggestions(
+                        MapboxQuery(
+                            searchQuery = searchQuery, sessionToken = USER_UUID
+                        ).toMap()
+                    )
+                ).checkResponse()
+            } catch (e: Exception) {
+                Resource.Error(SERVER_ERROR_MESSAGE, null)
+            }
         }
+
+    override suspend fun addCity(city: String) {
+        realmDao.addCity(city)
     }
 
-    override suspend fun addCity(city: String) {realmDao.addCity(city)}
-
-    override suspend fun deleteCity(city: String) {realmDao.deleteCity(city)}
+    override suspend fun deleteCity(city: String) {
+        realmDao.deleteCity(city)
+    }
 
     override suspend fun observeCityList(): Flow<List<CityItem>> = realmDao.getCityList()
 

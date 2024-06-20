@@ -2,25 +2,28 @@ package com.rektstudios.trueweather.domain.util
 
 
 class WeatherConditionMapperUtil {
-    companion object{
-        fun getShortCondition(text: String): String{
-            return if(text.contains("cloudy",true)) "Cloudy"
-            else if(text.contains("overcast",true)) "Overcast"
-            else if(text.contains("rain",true) || text.contains("drizzle",true)) "Rain"
-            else if(text.contains("snow",true)) "Snow"
-            else if(text.contains("fog",true)) "Fog"
-            else if(text.contains("mist",true)) "Mist"
-            else if(text.contains("clear",true)) "Clear"
-            else if(text.contains("sunny",true)) "Sunny"
-            else if(text.contains("ice",true)) "Hail"
-            else if(text.contains("sleet",true)) "Sleet"
-            else if(text.contains("blizzard",true)) "Blizzard"
-            else if(text.contains("thunder",true)) "Thunder"
+
+    companion object {
+
+        fun getShortCondition(text: String): String {
+            return if (text.contains("cloudy", true)) "Cloudy"
+            else if (text.contains("overcast", true)) "Overcast"
+            else if (text.contains("rain", true) || text.contains("drizzle", true)) "Rain"
+            else if (text.contains("snow", true)) "Snow"
+            else if (text.contains("fog", true)) "Fog"
+            else if (text.contains("mist", true)) "Mist"
+            else if (text.contains("clear", true)) "Clear"
+            else if (text.contains("sunny", true)) "Sunny"
+            else if (text.contains("ice", true)) "Hail"
+            else if (text.contains("sleet", true)) "Sleet"
+            else if (text.contains("blizzard", true)) "Blizzard"
+            else if (text.contains("thunder", true)) "Thunder"
             else "Text $text"
         }
-        fun getMediumCondition(text: String): String{
+
+        fun getMediumCondition(text: String): String {
             var correctedText = text
-            if(correctedText.contains("in"))
+            if (correctedText.contains("in"))
                 correctedText = correctedText.substringBefore(" in ")
             return when (correctedText) {
                 "Sunny" -> "Sunny"
@@ -71,9 +74,11 @@ class WeatherConditionMapperUtil {
                 "Patchy light rain with thunder" -> "P,L Rain & Thunder"
                 "Moderate or heavy rain with thunder" -> "M/H Rain & Thunder"
                 "Patchy light snow with thunder" -> "L,P Snow & Thunder"
-                "Moderate or heavy snow with thunder" ->"H Snow & Thunder"
+                "Moderate or heavy snow with thunder" -> "H Snow & Thunder"
                 else -> correctedText
             }
         }
+
     }
+
 }

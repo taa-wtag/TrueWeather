@@ -14,21 +14,23 @@ class CurrentCityUseCase @Inject constructor(
     private val locationTracker: ILocationTracker,
     private val getCityNameFromLocationUseCase: GetCityNameFromLocationUseCase
 ) {
+
     suspend fun getCurrentCity(): CityItem? {
-        val city =  prefsRepository.getObservableValue(KEY_CITY_NAME).firstOrNull()?:""
-        if(city.isEmpty()) return null
+        val city = prefsRepository.getObservableValue(KEY_CITY_NAME).firstOrNull() ?: ""
+        if (city.isEmpty()) return null
         cityRepository.addCity(city)
         return cityRepository.getCityByName(city)
     }
 
-    suspend fun getCurrentCityFromLocation(): CityItem?{
+    suspend fun getCurrentCityFromLocation(): CityItem? {
         locationTracker.getCurrentLocation()?.let {
             getCityNameFromLocationUseCase.invoke(it.first, it.second).run {
-                if(this.isNotEmpty()) setCurrentCity(this)
+                if (this.isNotEmpty()) setCurrentCity(this)
             }
         }
         return getCurrentCity()
     }
 
     suspend fun setCurrentCity(city: String) = prefsRepository.saveValue(KEY_CITY_NAME, city)
+
 }

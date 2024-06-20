@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 class PrefsRepositoryImpl @Inject constructor(
     private val prefsDataStore: DataStore<Preferences>
-): IPrefsRepository {
+) : IPrefsRepository {
     override suspend fun saveValue(key: Preferences.Key<String>, value: String) {
         withContext(Dispatchers.IO) {
             prefsDataStore.edit { it[key] = value }
@@ -20,7 +20,8 @@ class PrefsRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun getObservableValue(key: Preferences.Key<String>): Flow<String?> = withContext(Dispatchers.IO){
-        prefsDataStore.data.map { it[key] }
-    }
+    override suspend fun getObservableValue(key: Preferences.Key<String>): Flow<String?> =
+        withContext(Dispatchers.IO) {
+            prefsDataStore.data.map { it[key] }
+        }
 }

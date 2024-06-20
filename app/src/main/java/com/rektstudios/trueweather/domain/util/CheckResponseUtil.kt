@@ -3,6 +3,7 @@ package com.rektstudios.trueweather.domain.util
 import retrofit2.Response
 
 class CheckResponseUtil<T>(private val response: Response<T>) {
+
     fun checkResponse(): Resource<T> {
         return if (response.isSuccessful) {
             response.body()?.let {
@@ -16,5 +17,6 @@ class CheckResponseUtil<T>(private val response: Response<T>) {
             }
         }
     }
+
 }
 

@@ -13,7 +13,7 @@ interface MapBoxApiService {
     suspend fun searchPlaceSuggestions(
         @Query("q") searchQuery: String,
         @Query("session_token") sessionToken: String?,
-        @Query("language") language: String="",
+        @Query("language") language: String = "",
         @Query("limit") limit: Int = SEARCH_LIMIT,
         @Query("country") country: String = "",
         @Query("types") types: String = "place",
@@ -22,6 +22,6 @@ interface MapBoxApiService {
 
     @GET("search/searchbox/v1/suggest")
     suspend fun searchPlaceSuggestions(
-        @QueryMap mapboxQuery: Map<String,String>
+        @QueryMap mapboxQuery: Map<String, String>
     ): Response<SearchResponse>
 }

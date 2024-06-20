@@ -32,7 +32,7 @@ class CityViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private lateinit var viewModel:CityViewModel
+    private lateinit var viewModel: CityViewModel
 
     private lateinit var addCityUseCase: AddCityUseCase
     private lateinit var deleteCityUseCase: DeleteCityUseCase
@@ -55,10 +55,18 @@ class CityViewModelTest {
         addCityUseCase = AddCityUseCase(fakeCityRepository)
         deleteCityUseCase = DeleteCityUseCase(fakeCityRepository)
         getCityListUseCase = GetCityListUseCase(fakeCityRepository)
-        getCitySuggestionsUseCase = GetCitySuggestionsUseCase(fakeCityRepository, fakeWeatherRepository)
+        getCitySuggestionsUseCase =
+            GetCitySuggestionsUseCase(fakeCityRepository, fakeWeatherRepository)
         getCurrentWeatherUseCase = GetCurrentWeatherUseCase(fakeWeatherRepository)
         userPrefsUseCase = UserPrefsUseCase(fakePrefsRepository)
-        viewModel = CityViewModel(userPrefsUseCase, addCityUseCase,deleteCityUseCase,getCityListUseCase,getCitySuggestionsUseCase,getCurrentWeatherUseCase)
+        viewModel = CityViewModel(
+            userPrefsUseCase,
+            addCityUseCase,
+            deleteCityUseCase,
+            getCityListUseCase,
+            getCitySuggestionsUseCase,
+            getCurrentWeatherUseCase
+        )
     }
 
     @After
@@ -66,59 +74,59 @@ class CityViewModelTest {
     }
 
     @Test
-    fun `addCity - checks added to cache`() = runTest{
-        val city = "Dhaka, India"
-         viewModel.addCity(city)
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity = fakeRealmDao.getCity(city)
-        Assert.assertEquals(city,testCity?.cityName)
-    }
-
-    @Test
-    fun `addCity - checks cities flow updated`() = runTest{
+    fun `addCity - checks added to cache`() = runTest {
         val city = "Dhaka, India"
         viewModel.addCity(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        val testCity= viewModel.cityList.firstOrNull()?.firstOrNull()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        Assert.assertEquals(city,testCity?.cityName)
+        val testCity = fakeRealmDao.getCity(city)
+        Assert.assertEquals(city, testCity?.cityName)
     }
 
     @Test
-    fun `deleteCity - checks deleted from cache`() = runTest{
+    fun `addCity - checks cities flow updated`() = runTest {
+        val city = "Dhaka, India"
+        viewModel.addCity(city)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        val testCity = viewModel.cityList.firstOrNull()?.firstOrNull()
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        Assert.assertEquals(city, testCity?.cityName)
+    }
+
+    @Test
+    fun `deleteCity - checks deleted from cache`() = runTest {
         val city = "Dhaka, India"
         viewModel.addCity(city)
         viewModel.deleteCity(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity = fakeRealmDao.getCity(city)
-        Assert.assertEquals(null,testCity)
+        Assert.assertEquals(null, testCity)
     }
 
 
     @Test
-    fun `searchCities - checks valid response returned`() = runTest{
+    fun `searchCities - checks valid response returned`() = runTest {
         viewModel.searchCities("To")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity = viewModel.suggestedCities.getOrAwaitValue().firstOrNull()
         if (testCity != null) {
-            Assert.assertEquals("Tokyo, Japan",testCity)
+            Assert.assertEquals("Tokyo, Japan", testCity)
         }
     }
 
     @Test
-    fun `searchCities - checks empty query returns null`() = runTest{
+    fun `searchCities - checks empty query returns null`() = runTest {
         viewModel.searchCities("")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity = viewModel.suggestedCities.getOrAwaitValue().firstOrNull()
-        Assert.assertEquals(null,testCity)
+        Assert.assertEquals(null, testCity)
     }
 
     @Test
-    fun `searchCities - checks invalid query returns null`() = runTest{
+    fun `searchCities - checks invalid query returns null`() = runTest {
         viewModel.searchCities("Da")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         val testCity = viewModel.suggestedCities.getOrAwaitValue().firstOrNull()
-        Assert.assertEquals(null,testCity)
+        Assert.assertEquals(null, testCity)
     }
 
 }

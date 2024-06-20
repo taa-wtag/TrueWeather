@@ -14,15 +14,19 @@ import javax.inject.Inject
 
 private const val VIEW_TYPE_CITY = 0
 private const val VIEW_TYPE_ADD = 1
+
 class CityCardAdapter @Inject constructor(
     private val glide: RequestManager
-): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var navigateToCityFragment: ((View) -> Unit) = {}
-    inner class AddCardViewHolder(private val binding: ItemCityCardAddBinding) : RecyclerView.ViewHolder(binding.root){
-        fun bind(){
-            binding.buttonAddCity.setOnClickListener ( navigateToCityFragment )
+
+    inner class AddCardViewHolder(private val binding: ItemCityCardAddBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind() {
+            binding.buttonAddCity.setOnClickListener(navigateToCityFragment)
         }
     }
+
     override fun getItemViewType(position: Int): Int {
         return when (position) {
             0 -> VIEW_TYPE_ADD
@@ -32,17 +36,23 @@ class CityCardAdapter @Inject constructor(
 
     private val differ = AsyncListDiffer(this, CityItemDiffCallback())
 
-    var cityItems: List<Pair<CityItem,HourlyWeatherItem?>>
+    var cityItems: List<Pair<CityItem, HourlyWeatherItem?>>
         get() = differ.currentList
-        set(value) = differ.submitList(listOf(Pair(CityItem(),null))+value.reversed())
+        set(value) = differ.submitList(listOf(Pair(CityItem(), null)) + value.reversed())
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when(viewType){
+        return when (viewType) {
             VIEW_TYPE_ADD -> {
-                val binding = ItemCityCardAddBinding.inflate(LayoutInflater.from(parent.context), parent,false)
+                val binding = ItemCityCardAddBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
                 AddCardViewHolder(binding)
             }
+
             else -> {
-                val binding = ItemCityCardMainBinding.inflate(LayoutInflater.from(parent.context), parent,false)
+                val binding = ItemCityCardMainBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
                 CityCardViewHolder(binding)
             }
         }
@@ -54,8 +64,11 @@ class CityCardAdapter @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (holder){
-            is CityCardViewHolder -> holder.bind(cityItems[position].first,cityItems[position].second,glide)
+        when (holder) {
+            is CityCardViewHolder -> holder.bind(
+                cityItems[position].first, cityItems[position].second, glide
+            )
+
             is AddCardViewHolder -> holder.bind()
         }
     }

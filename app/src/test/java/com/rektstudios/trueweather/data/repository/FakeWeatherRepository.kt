@@ -16,35 +16,36 @@ import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import com.rektstudios.trueweather.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
-class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository {
+class FakeWeatherRepository(private val realmDao: IRealmDao) : IWeatherRepository {
     private val locationMap = mutableMapOf(
-        Pair(Pair(23.72, 90.41),"Dhaka, Bangladesh"),
-        Pair(Pair(26.68, 85.17),"Dhaka, India"),
-        Pair(Pair(34.05, -118.24),"Los Angeles, United States"),
-        Pair(Pair(13.75, 100.52),"Bangkok, Thailand"),
-        Pair(Pair(35.69, 139.69),"Tokyo, Japan"),
+        Pair(Pair(23.72, 90.41), "Dhaka, Bangladesh"),
+        Pair(Pair(26.68, 85.17), "Dhaka, India"),
+        Pair(Pair(34.05, -118.24), "Los Angeles, United States"),
+        Pair(Pair(13.75, 100.52), "Bangkok, Thailand"),
+        Pair(Pair(35.69, 139.69), "Tokyo, Japan"),
     )
 
-    val fakeCurrentWeatherResponses = listOf(CurrentWeatherResponse(
-        HourlyWeatherData(
-            WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/296.png","Light rain"),
-            21.0,
-            69.8,
-            78,
-            1,
-            21.0,
-            69.8,
-            "2024-06-02 14:45",
-            1717307488,
-            8.0,
-            4.0,
-            9.0,
-            5.6
-        )
-    ),
+    val fakeCurrentWeatherResponses = listOf(
         CurrentWeatherResponse(
             HourlyWeatherData(
-                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/116.png","Partly cloudy"),
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/296.png", "Light rain"),
+                21.0,
+                69.8,
+                78,
+                1,
+                21.0,
+                69.8,
+                "2024-06-02 14:45",
+                1717307488,
+                8.0,
+                4.0,
+                9.0,
+                5.6
+            )
+        ),
+        CurrentWeatherResponse(
+            HourlyWeatherData(
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/116.png", "Partly cloudy"),
                 18.0,
                 64.4,
                 56,
@@ -63,7 +64,7 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
     val fakeForecastResponses = listOf(
         ForecastWeatherResponse(
             HourlyWeatherData(
-                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/296.png","Light rain"),
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/296.png", "Light rain"),
                 21.0,
                 69.8,
                 78,
@@ -125,7 +126,7 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
         ),
         ForecastWeatherResponse(
             HourlyWeatherData(
-                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/116.png","Partly cloudy"),
+                WeatherCondition("//cdn.weatherapi.com/weather/64x64/day/116.png", "Partly cloudy"),
                 18.0,
                 64.4,
                 56,
@@ -189,13 +190,14 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
 
     private var shouldReturnNetworkError = false
 
-    fun setShouldReturnNetworkError(value: Boolean){
+    fun setShouldReturnNetworkError(value: Boolean) {
         shouldReturnNetworkError = value
     }
+
     override suspend fun getCurrentWeatherFromRemote(city: String): Resource<CurrentWeatherResponse> {
-        return if(shouldReturnNetworkError)
+        return if (shouldReturnNetworkError)
             Resource.Error("Network Error", null)
-        else if(city.contains("Tokyo"))
+        else if (city.contains("Tokyo"))
             Resource.Success(fakeCurrentWeatherResponses[0])
         else if (city.contains("Sapporo"))
             Resource.Success(fakeCurrentWeatherResponses[1])
@@ -207,9 +209,9 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
         city: String,
         days: Int
     ): Resource<ForecastWeatherResponse> {
-        return if(shouldReturnNetworkError)
+        return if (shouldReturnNetworkError)
             Resource.Error("Network Error", null)
-        else if(city.contains("Tokyo"))
+        else if (city.contains("Tokyo"))
             Resource.Success(fakeForecastResponses[0])
         else if (city.contains("Sapporo"))
             Resource.Success(fakeForecastResponses[1])
@@ -217,8 +219,8 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
             Resource.Error("Error", null)
     }
 
-    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem?>
-    = realmDao.getCityWeatherCurrent(city)
+    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem?> =
+        realmDao.getCityWeatherCurrent(city)
 
     override suspend fun getWeatherForecastInDaysFromCache(
         city: String,
@@ -230,21 +232,16 @@ class FakeWeatherRepository(private val realmDao: IRealmDao):IWeatherRepository 
         days: Int
     ): Flow<List<HourlyWeatherItem>> = realmDao.getCityWeatherForecastInHours(city)
 
-    override suspend fun <T> addWeather(city: String, weather: T) = realmDao.addWeather(city,weather)
+    override suspend fun <T> addWeather(city: String, weather: T) =
+        realmDao.addWeather(city, weather)
 
     override suspend fun getCityNameFromRemote(lat: Double, lon: Double): Resource<PlaceResponse> {
-        return if(shouldReturnNetworkError || locationMap[Pair(lat,lon)].isNullOrEmpty()){
+        return if (shouldReturnNetworkError || locationMap[Pair(lat, lon)].isNullOrEmpty()) {
             Resource.Error("Error", null)
-        }
-        else{
-            val country = locationMap[Pair(lat,lon)]?.substringAfter(", ")
-            val name = locationMap[Pair(lat,lon)]?.substringBefore(",")
-            Resource.Success(
-                    arrayListOf(CityData(
-                        country,
-                        name
-                    )) as PlaceResponse
-            )
+        } else {
+            val country = locationMap[Pair(lat, lon)]?.substringAfter(", ")
+            val name = locationMap[Pair(lat, lon)]?.substringBefore(",")
+            Resource.Success(arrayListOf(CityData(country, name)) as PlaceResponse)
         }
     }
 

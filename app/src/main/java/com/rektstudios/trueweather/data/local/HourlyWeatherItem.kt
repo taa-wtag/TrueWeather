@@ -2,8 +2,8 @@ package com.rektstudios.trueweather.data.local
 
 import io.realm.RealmObject
 
-open class HourlyWeatherItem (
-    var timeEpoch : Long? = null,
+open class HourlyWeatherItem(
+    var timeEpoch: Long? = null,
     var timeString: String? = null,
     var tempC: Double? = null,
     var tempF: Double? = null,
@@ -17,4 +17,4 @@ open class HourlyWeatherItem (
     var isDay: Int? = null,
     var conditionText: String? = null,
     var imageUrl: String? = null
-): RealmObject()
+) : RealmObject()

@@ -17,4 +17,5 @@ abstract class LocationModule {
     abstract fun bindLocationTracker(
         locationTrackerImpl: LocationTrackerImpl
     ): ILocationTracker
+
 }

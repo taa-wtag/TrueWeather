@@ -42,19 +42,24 @@ class CitiesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentCitiesBinding.inflate(inflater,container,false)
+        binding = FragmentCitiesBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupCityRecyclerView()
+
         subscribeToObservers()
+
         setupSearchRecyclerView()
+
         binding.buttonAddCity.setOnClickListener {
-            if(!binding.cardViewSearchCityModal.isVisible)
+            if (!binding.cardViewSearchCityModal.isVisible)
                 binding.cardViewSearchCityModal.visibility = VISIBLE
         }
+
         var job: Job? = null
         binding.editTextSearchCity.addTextChangedListener { editable ->
             job?.cancel()
@@ -67,8 +72,9 @@ class CitiesFragment : Fragment() {
                 }
             }
         }
+
         requireActivity().onBackPressedDispatcher.addCallback(this) {
-            if(binding.cardViewSearchCityModal.isVisible)
+            if (binding.cardViewSearchCityModal.isVisible)
                 binding.cardViewSearchCityModal.visibility = GONE
             else findNavController().popBackStack()
         }
@@ -78,7 +84,7 @@ class CitiesFragment : Fragment() {
     private fun setupCityRecyclerView() {
         binding.recyclerViewCityItem.apply {
             adapter = cityItemAdapter
-            layoutManager = GridLayoutManager(requireContext(),CITY_GRID_SPAN)
+            layoutManager = GridLayoutManager(requireContext(), CITY_GRID_SPAN)
         }
         cityItemAdapter.setOnDeleteButtonClickListener {
             viewModel.deleteCity(it)
@@ -92,17 +98,27 @@ class CitiesFragment : Fragment() {
         }
         searchCityAdapter.setOnItemClickListener {
             viewModel.addCity(it)
-            searchCityAdapter.cityItems= emptyList()
+            searchCityAdapter.cityItems = emptyList()
             binding.editTextSearchCity.text?.clear()
             binding.cardViewSearchCityModal.visibility = GONE
         }
     }
+
     private fun subscribeToObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             launch {
-                combine(viewModel.cityList,viewModel.currentWeatherForEachCity){cities, weathers->
-                    cities.mapIndexed { position, cityItem ->Pair(cityItem, if(weathers.isEmpty() || position>=weathers.size)null else weathers[position]) }
-                }.collect{
+                combine(
+                    viewModel.cityList,
+                    viewModel.currentWeatherForEachCity
+                ) { cities, weathers ->
+                    cities.mapIndexed { position, cityItem ->
+                        Pair(
+                            cityItem,
+                            if (weathers.isEmpty() || position >= weathers.size) null
+                            else weathers[position]
+                        )
+                    }
+                }.collect {
                     cityItemAdapter.cityItems = it
                 }
             }

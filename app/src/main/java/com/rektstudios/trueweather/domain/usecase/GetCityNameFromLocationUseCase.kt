@@ -8,19 +8,21 @@ class GetCityNameFromLocationUseCase @Inject constructor(
     private val weatherRepository: IWeatherRepository,
     private val geocodeHelper: IGeocodeHelper
 ) {
+
     suspend operator fun invoke(lat: Double, lon: Double): String {
         var cityName = geocodeHelper.geocodeLocation(lat, lon)
         if (cityName.isEmpty()) {
-                cityName = fetchLocationFromApi(lat, lon)
+            cityName = fetchLocationFromApi(lat, lon)
         }
         return cityName
     }
 
     private suspend fun fetchLocationFromApi(lat: Double, lon: Double): String {
-        return weatherRepository.getCityNameFromRemote(lat, lon).data?.let {item ->
+        return weatherRepository.getCityNameFromRemote(lat, lon).data?.let { item ->
             item.firstOrNull()?.let {
                 it.cityName + ", " + it.countryName
             }
-        }?:""
+        } ?: ""
     }
+
 }

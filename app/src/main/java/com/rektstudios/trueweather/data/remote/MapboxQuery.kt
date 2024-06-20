@@ -13,8 +13,8 @@ data class MapboxQuery(
     var accessToken: String = BuildConfig.TOKEN_KEY
 )
 
-fun MapboxQuery.toMap(): Map<String, String>{
-    val queryMap = mutableMapOf<String,String>()
+fun MapboxQuery.toMap(): Map<String, String> {
+    val queryMap = mutableMapOf<String, String>()
     queryMap["q"] = searchQuery
     sessionToken?.let { queryMap["session_token"] = it }
     language?.let { queryMap["language"] = it }

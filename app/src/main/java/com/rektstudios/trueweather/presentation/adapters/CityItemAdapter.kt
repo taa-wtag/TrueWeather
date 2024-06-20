@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 class CityItemAdapter @Inject constructor(
     private val glide: RequestManager
-): RecyclerView.Adapter<CityItemViewHolder>() {
+) : RecyclerView.Adapter<CityItemViewHolder>() {
     private var isDeleteButtonVisible = false
 
     private var onDeleteButtonClickListener: ((String) -> Unit)? = null
@@ -25,17 +25,19 @@ class CityItemAdapter @Inject constructor(
 
     @SuppressLint("NotifyDataSetChanged")
     private val toggleDeleteButtonVisibility: () -> Unit = {
-        isDeleteButtonVisible=!isDeleteButtonVisible
+        isDeleteButtonVisible = !isDeleteButtonVisible
         notifyDataSetChanged()
     }
 
     private val differ = AsyncListDiffer(this, CityItemDiffCallback())
 
-    var cityItems: List<Pair<CityItem,HourlyWeatherItem?>>
+    var cityItems: List<Pair<CityItem, HourlyWeatherItem?>>
         get() = differ.currentList
         set(value) = differ.submitList(value)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityItemViewHolder {
-        val binding = ItemCityCardFragmentBinding.inflate(LayoutInflater.from(parent.context), parent,false)
+        val binding =
+            ItemCityCardFragmentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CityItemViewHolder(binding)
     }
 
@@ -44,7 +46,12 @@ class CityItemAdapter @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: CityItemViewHolder, position: Int) {
-        holder.bind(cityItems[position].first,cityItems[position].second,glide,onDeleteButtonClickListener, isDeleteButtonVisible
+        holder.bind(
+            cityItems[position].first,
+            cityItems[position].second,
+            glide,
+            onDeleteButtonClickListener,
+            isDeleteButtonVisible
         ) { toggleDeleteButtonVisibility() }
     }
 }

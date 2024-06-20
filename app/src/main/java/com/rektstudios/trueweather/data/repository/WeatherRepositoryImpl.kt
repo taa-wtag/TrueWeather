@@ -17,42 +17,63 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class WeatherRepositoryImpl @Inject constructor(
-    private val weatherApiService: WeatherApiService,
-    private val realmDao: IRealmDao
+    private val weatherApiService: WeatherApiService, private val realmDao: IRealmDao
 ) : IWeatherRepository {
 
 
-    override suspend fun getCurrentWeatherFromRemote(city: String): Resource<CurrentWeatherResponse>  = withContext(Dispatchers.IO){
+    override suspend fun getCurrentWeatherFromRemote(city: String): Resource<CurrentWeatherResponse> =
+        withContext(Dispatchers.IO) {
+            try {
+                CheckResponseUtil(weatherApiService.getCurrentWeather(city = city)).checkResponse()
+            } catch (e: Exception) {
+                Resource.Error(SERVER_ERROR_MESSAGE, null)
+            }
+        }
+
+    override suspend fun getForecastWeatherFromRemote(
+        city: String, days: Int
+    ): Resource<ForecastWeatherResponse> = withContext(Dispatchers.IO) {
         try {
-            CheckResponseUtil(weatherApiService.getCurrentWeather(city = city)).checkResponse()
+            CheckResponseUtil(
+                weatherApiService.getWeatherForecast(
+                    city = city, days = days
+                )
+            ).checkResponse()
         } catch (e: Exception) {
             Resource.Error(SERVER_ERROR_MESSAGE, null)
         }
     }
 
-    override suspend fun getForecastWeatherFromRemote(city: String, days: Int): Resource<ForecastWeatherResponse>  =
+    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem?> =
+        realmDao.getCityWeatherCurrent(city)
+
+    override suspend fun getWeatherForecastInDaysFromCache(
+        city: String, days: Int
+    ): Flow<List<DailyWeatherItem>> = realmDao.getCityWeatherForecastInDays(city)
+
+    override suspend fun getWeatherForecastInHoursFromCache(
+        city: String, days: Int
+    ): Flow<List<HourlyWeatherItem>> = realmDao.getCityWeatherForecastInHours(city)
+
+    override suspend fun <T> addWeather(city: String, weather: T) =
+        realmDao.addWeather(city, weather)
+
+    override suspend fun getCityNameFromRemote(lat: Double, lon: Double): Resource<PlaceResponse> =
         withContext(Dispatchers.IO) {
-            try { CheckResponseUtil(weatherApiService.getWeatherForecast(city = city, days = days)).checkResponse()
-            } catch (e: Exception) {Resource.Error(SERVER_ERROR_MESSAGE, null)}
+            try {
+                CheckResponseUtil(weatherApiService.getCityName(latLon = "$lat, $lon")).checkResponse()
+            } catch (e: Exception) {
+                Resource.Error(SERVER_ERROR_MESSAGE, null)
+            }
         }
 
-    override suspend fun getCurrentWeatherFromCache(city: String): Flow<HourlyWeatherItem?> = realmDao.getCityWeatherCurrent(city)
-
-    override suspend fun getWeatherForecastInDaysFromCache(city: String, days: Int): Flow<List<DailyWeatherItem>> = realmDao.getCityWeatherForecastInDays(city)
-
-    override suspend fun getWeatherForecastInHoursFromCache(city: String, days: Int): Flow<List<HourlyWeatherItem>> = realmDao.getCityWeatherForecastInHours(city)
-    override suspend fun <T> addWeather(city: String, weather: T) = realmDao.addWeather(city,weather)
-
-    override suspend fun getCityNameFromRemote(lat: Double, lon: Double): Resource<PlaceResponse>  = withContext(Dispatchers.IO){
-        try {
-            CheckResponseUtil(weatherApiService.getCityName(latLon = "$lat, $lon")).checkResponse()
-        } catch (e: Exception) { Resource.Error(SERVER_ERROR_MESSAGE, null)}
-    }
-
-    override suspend fun searchCity(city: String): Resource<PlaceResponse>  = withContext(Dispatchers.IO){
-        try {
-            CheckResponseUtil(weatherApiService.searchCity(city = city)).checkResponse()
-        } catch (e: Exception) {Resource.Error(SERVER_ERROR_MESSAGE, null)}
-    }
+    override suspend fun searchCity(city: String): Resource<PlaceResponse> =
+        withContext(Dispatchers.IO) {
+            try {
+                CheckResponseUtil(weatherApiService.searchCity(city = city)).checkResponse()
+            } catch (e: Exception) {
+                Resource.Error(SERVER_ERROR_MESSAGE, null)
+            }
+        }
 
 }

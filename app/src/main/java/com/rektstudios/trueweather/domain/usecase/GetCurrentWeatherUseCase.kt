@@ -15,26 +15,32 @@ import javax.inject.Inject
 class GetCurrentWeatherUseCase @Inject constructor(
     private val weatherRepository: IWeatherRepository
 ) {
+
     suspend operator fun invoke(city: String): Flow<HourlyWeatherItem?> {
         val current = getWeatherFromCache(city)
         current.firstOrNull()?.let {
-            if (it.isValid && (it.timeEpoch?.minus(getCurrentTime()))?.let { it1-> it1 < FORECAST_MIN_TIME_PAST} != false)
+            if (it.isValid && (it.timeEpoch?.minus(getCurrentTime()))?.let { it1 -> it1 < FORECAST_MIN_TIME_PAST } != false)
                 return current
         }
         return getWeatherFromRemote(city)
     }
+
     suspend operator fun invoke(cityList: List<CityItem>): Flow<List<HourlyWeatherItem?>> {
         val hourlyWeatherItemFlowList = cityList.map {
-            it.cityName?.let { it1 -> invoke(it1) }?: emptyFlow()
+            it.cityName?.let { it1 -> invoke(it1) } ?: emptyFlow()
         }
-        return combine(hourlyWeatherItemFlowList){it.toList()}
+        return combine(hourlyWeatherItemFlowList) { it.toList() }
     }
 
-    private suspend fun getWeatherFromCache(city: String) = weatherRepository.getCurrentWeatherFromCache(city)
+    private suspend fun getWeatherFromCache(city: String) =
+        weatherRepository.getCurrentWeatherFromCache(city)
+
     private suspend fun getWeatherFromRemote(city: String): Flow<HourlyWeatherItem?> {
-        weatherRepository.getCurrentWeatherFromRemote(city).data?.currentWeatherData?.toHourlyWeatherItem()?.let {
-            weatherRepository.addWeather(city,it)
-        }
+        weatherRepository.getCurrentWeatherFromRemote(city).data?.currentWeatherData?.toHourlyWeatherItem()
+            ?.let {
+                weatherRepository.addWeather(city, it)
+            }
         return getWeatherFromCache(city)
     }
+
 }

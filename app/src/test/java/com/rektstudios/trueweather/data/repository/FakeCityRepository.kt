@@ -11,23 +11,22 @@ import com.rektstudios.trueweather.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 
-class FakeCityRepository(private val realmDao: IRealmDao):ICityRepository {
+class FakeCityRepository(private val realmDao: IRealmDao) : ICityRepository {
     private var shouldReturnNetworkError = false
 
-    fun setShouldReturnNetworkError(value: Boolean){
+    fun setShouldReturnNetworkError(value: Boolean) {
         shouldReturnNetworkError = value
     }
+
     override suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse> {
-        return if(shouldReturnNetworkError || !"Tokyo".contains(searchQuery)){
+        return if (shouldReturnNetworkError || !"Tokyo".contains(searchQuery)) {
             Resource.Error("Error", null)
-        }
-        else{
+        } else {
             Resource.Success(
                 SearchResponse(
                     listOf(
                         CitySuggestion(
-                            PlaceData(CountryData("Japan")),
-                            "Tokyo"
+                            PlaceData(CountryData("Japan")), "Tokyo"
                         )
                     )
                 )

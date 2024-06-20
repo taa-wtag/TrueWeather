@@ -48,8 +48,7 @@ class WeatherFragment : Fragment() {
 
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentWeatherBinding.inflate(inflater, container, false)
         return binding.root
@@ -63,8 +62,7 @@ class WeatherFragment : Fragment() {
         binding.floatingActionButtonGetLocation.setOnClickListener {
             if (isLocationPermissionGranted) {
                 viewModel.setCurrentCityFromGPS()
-            } else
-                permissionLauncher.launch(locationPermissions)
+            } else permissionLauncher.launch(locationPermissions)
         }
     }
 
@@ -74,21 +72,22 @@ class WeatherFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             launch {
                 viewModel.currentCityDailyWeatherForecast.collect {
-                    dailyWeatherAdapter.dailyWeatherItems = if (it.isNotEmpty())
-                        it.sortedBy { item -> item.dateEpoch }
-                    else emptyList()
+                    dailyWeatherAdapter.dailyWeatherItems =
+                        if (it.isNotEmpty()) it.sortedBy { item -> item.dateEpoch }
+                        else emptyList()
                 }
             }
             launch {
                 viewModel.currentCityHourlyWeatherForecast.collect {
                     dailyWeatherAdapter.hourlyWeatherAdapter.hourlyWeatherItems =
-                        if (it.isNotEmpty()) it
-                            .filter { item ->
+                        if (it.isNotEmpty()) it.filter { item ->
                                 item.timeString?.substring(11, 13)?.toInt()?.let { it1 ->
                                     it.first().timeString?.substring(11, 13)?.toInt()
                                         ?.let { it2 -> it1 > it2 }
-                                } == true || (item.timeString?.substring(11, 13) == "00" &&
-                                        item.timeEpoch?.let { it1 -> it1 > getCurrentTime() } == true)
+                                } == true || (item.timeString?.substring(
+                                    11,
+                                    13
+                                ) == "00" && item.timeEpoch?.let { it1 -> it1 > getCurrentTime() } == true)
                             }
                         else emptyList()
                 }
@@ -97,8 +96,7 @@ class WeatherFragment : Fragment() {
                 viewModel.cityList.collect {
                     cityCardAdapter.cityItems = if (it.isNotEmpty()) it.map { cityItem ->
                         Pair(
-                            cityItem,
-                            cityItem.weatherEveryHour.firstOrNull()
+                            cityItem, cityItem.weatherEveryHour.firstOrNull()
                         )
                     } else emptyList()
 
@@ -128,12 +126,10 @@ class WeatherFragment : Fragment() {
     private val pageChangedCallback = object : OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
-            if (position != 0)
-                cityCardAdapter.cityItems[position].first.cityName?.let {
-                    viewModel.setCurrentCityAndWeather(it)
-                }
-            else
-                viewModel.setCurrentCityAndWeather("")
+            if (position != 0) cityCardAdapter.cityItems[position].first.cityName?.let {
+                viewModel.setCurrentCityAndWeather(it)
+            }
+            else viewModel.setCurrentCityAndWeather("")
         }
     }
 
@@ -141,8 +137,8 @@ class WeatherFragment : Fragment() {
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
-            if (it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
-                isLocationPermissionGranted = true
+            if (it[Manifest.permission.ACCESS_FINE_LOCATION] == true && it[Manifest.permission.ACCESS_COARSE_LOCATION] == true) isLocationPermissionGranted =
+                true
         }
         permissionLauncher.launch(locationPermissions)
     }
