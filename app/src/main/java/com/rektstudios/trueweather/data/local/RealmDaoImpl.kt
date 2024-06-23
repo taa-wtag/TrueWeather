@@ -1,115 +1,229 @@
 package com.rektstudios.trueweather.data.local
 
-import com.rektstudios.trueweather.other.Constants.getDateTodayInLocale
-import com.rektstudios.trueweather.other.Constants.getTimeTodayInLocale
+import android.util.Log
+import com.rektstudios.trueweather.domain.util.Constants.FORECAST_MIN_TIME_PAST
+import com.rektstudios.trueweather.domain.util.Constants.MAX_BACKGROUND_COUNT
+import com.rektstudios.trueweather.domain.util.TimeUtil.Companion.getCurrentTime
 import io.realm.Realm
+import io.realm.RealmChangeListener
+import io.realm.RealmQuery
+import io.realm.RealmResults
 import io.realm.Sort
-import io.realm.kotlin.toFlow
-import kotlinx.coroutines.Dispatchers
+import io.realm.kotlin.executeTransactionAwait
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.Random
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 class RealmDaoImpl @Inject constructor(
     private val realm: Realm
-):IRealmDao {
-    override suspend fun addCity(cityItem: CityItem)  {
-        withContext(Dispatchers.IO) {
-            realm.copyToRealm(cityItem)
-        }
-    }
+) : IRealmDao {
 
-    override suspend fun deleteCity(cityItem: CityItem) {
-        withContext(Dispatchers.IO) {
-            realm.executeTransaction {
-                it.where(CityItem::class.java)
-                    .equalTo("name", cityItem.cityName)
-                    .and()
-                    .equalTo("countryCode", cityItem.countryCode)
-                    .findFirst()
-                    ?.deleteFromRealm()
+    override suspend fun addCity(city: String) {
+        realm.executeTransactionAwait {
+            try {
+                it.copyToRealm(
+                    CityItem(city).apply {
+                    backgroundColor = Random().nextInt(MAX_BACKGROUND_COUNT - 1) + 1
+                }
+                )
+            } catch (_: Exception) {
             }
         }
     }
 
-    override suspend fun addWeather(cityItem: CityItem, date: String, weatherHourItems: List<WeatherHourItem>) {
-        withContext(Dispatchers.IO) {
-            realm.executeTransaction { iRealm ->
-                val dateItem = queryDateItemHandler(iRealm, cityItem, date)
-                weatherHourItems.forEach { it.dateItem = dateItem }
-                iRealm.copyToRealm(weatherHourItems)
-                dateItem.weatherEveryHour.addAll(weatherHourItems)
+    override suspend fun deleteCity(city: String) {
+        realm.executeTransactionAwait {
+            getCityAsQuery(it, city)
+                .findFirst()
+                ?.deleteFromRealm()
+        }
+    }
+
+    override suspend fun <T> addWeather(city: String, weather: T) {
+        realm.executeTransactionAwait {
+            getCityAsQuery(it, city)
+                .findFirst()
+                ?.let { cityItem ->
+                when (weather) {
+                    is HourlyWeatherItem -> {
+                        cityItem.weatherEveryHour
+                            .where()
+                            ?.equalTo("timeEpoch", weather.timeEpoch)
+                            ?.or()
+                            ?.lessThan("timeEpoch", getCurrentTime() - FORECAST_MIN_TIME_PAST)
+                            ?.findAll()
+                            ?.deleteAllFromRealm()
+                        if (weather.timeEpoch?.let { item -> item > getCurrentTime() - FORECAST_MIN_TIME_PAST } == true)
+                            cityItem.weatherEveryHour.add(it.copyToRealm(weather))
+                    }
+
+                    is DailyWeatherItem -> {
+                        cityItem.weatherEveryDay.where()
+                            ?.equalTo("dateEpoch", weather.dateEpoch)
+                            ?.or()
+                            ?.lessThan("dateEpoch", getCurrentTime() - FORECAST_MIN_TIME_PAST)
+                            ?.findAll()
+                            ?.deleteAllFromRealm()
+                        if (weather.dateEpoch?.let { item -> item > getCurrentTime() - FORECAST_MIN_TIME_PAST } == true)
+                            cityItem.weatherEveryDay.add(it.copyToRealm(weather))
+                    }
+
+                    is List<*> -> when {
+                        weather.isListOf<HourlyWeatherItem>() -> {
+                            weather.forEach { hourlyWeatherItem ->
+                                if (hourlyWeatherItem is HourlyWeatherItem) {
+                                    cityItem.weatherEveryHour
+                                        .where()
+                                        ?.equalTo("timeEpoch", hourlyWeatherItem.timeEpoch)
+                                        ?.or()
+                                        ?.lessThan("timeEpoch", getCurrentTime() - FORECAST_MIN_TIME_PAST)
+                                        ?.findAll()
+                                        ?.deleteAllFromRealm()
+                                    if (hourlyWeatherItem.timeEpoch?.let { item -> item > getCurrentTime() - FORECAST_MIN_TIME_PAST } == true)
+                                        cityItem.weatherEveryHour.add(it.copyToRealm(hourlyWeatherItem)
+                                    )
+                                }
+                            }
+                        }
+
+                        weather.isListOf<DailyWeatherItem>() -> {
+                            weather.forEach { dailyWeatherItem ->
+                                if (dailyWeatherItem is DailyWeatherItem) {
+                                    cityItem.weatherEveryDay
+                                        .where()
+                                        ?.equalTo("dateEpoch", dailyWeatherItem.dateEpoch)
+                                        ?.or()
+                                        ?.lessThan("dateEpoch", getCurrentTime() - FORECAST_MIN_TIME_PAST)
+                                        ?.findAll()
+                                        ?.deleteAllFromRealm()
+                                    if (dailyWeatherItem.dateEpoch?.let { item -> item > getCurrentTime() - FORECAST_MIN_TIME_PAST } == true)
+                                        cityItem.weatherEveryDay.add(it.copyToRealm(dailyWeatherItem))
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    override suspend fun addWeather(cityItem: CityItem, date: String, weatherDayItem: WeatherDayItem) {
-        withContext(Dispatchers.IO) {
-            realm.executeTransaction { iRealm ->
-                val dateItem = queryDateItemHandler(iRealm, cityItem, date)
-                weatherDayItem.dateItem = dateItem
-                iRealm.copyToRealm(weatherDayItem)
-                dateItem.weatherThisDay=weatherDayItem
+
+    private inline fun <reified T> List<*>.isListOf(): Boolean {
+        return all { it is T }
+    }
+
+    override fun getCityList(): Flow<List<CityItem>> = callbackFlow {
+        val cityList = realm.where(CityItem::class.java).findAllAsync()
+        val cityListListener = RealmChangeListener<RealmResults<CityItem>> {
+            if (it.isValid)
+                trySend(realm.copyFromRealm(it))
+        }
+        cityList.addChangeListener(cityListListener)
+        awaitClose {
+            Log.d("MYTAG", "Get city list closed")
+            cityList.removeChangeListener(cityListListener)
+        }
+    }
+
+
+    override suspend fun getCity(city: String): CityItem? {
+        val query = realm.where(CityItem::class.java).equalTo("cityName", city).findFirstAsync()
+        return suspendCancellableCoroutine { continuation ->
+            query.addChangeListener { result: CityItem ->
+                if (result.isLoaded) {
+                    query.removeAllChangeListeners()
+                    if (result.isValid) {
+                        continuation.resume(result)
+                    } else {
+                        continuation.resume(null)
+                    }
+                }
             }
         }
     }
 
-    override fun getCityList(): Flow<CityItem> {
-        return realm.where(CityItem::class.java).findAll().asFlow().flowOn(Dispatchers.IO)
-    }
+    private fun getCityAsQuery(iRealm: Realm, cityName: String = ""): RealmQuery<CityItem> =
+        iRealm.where(CityItem::class.java).equalTo("cityName", cityName)
 
-    override fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?> {
-        return realm.where(WeatherHourItem::class.java)
-            .equalTo("dateItem.cityItem.id", city.id)
-            .and()
-            .lessThan("unixTime", getTimeTodayInLocale(city))
-            .sort("unixTime",Sort.DESCENDING)
-            .findFirst()
-            .toFlow()
-    }
 
-    override fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem> {
-        return realm.where(WeatherDayItem::class.java)
-            .equalTo("dateItem.cityItem.id", city.id)
-            .and()
-            .greaterThanOrEqualTo("unixTime", getDateTodayInLocale(city))
-            .sort("unixTime")
-            .findAll()
-            .asFlow()
-            .flowOn(Dispatchers.IO)
-    }
-
-    override fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem> {
-        return realm.where(WeatherHourItem::class.java)
-            .equalTo("dateItem.cityItem.id", city.id)
-            .and()
-            .greaterThanOrEqualTo("unixTime", getDateTodayInLocale(city))
-            .sort("unixTime")
-            .findAll()
-            .asFlow()
-            .flowOn(Dispatchers.IO)
-    }
-
-    private fun createDateItemFromStringAndLocale(date: String, cityItem: CityItem): DateItem{
-        return DateItem().apply {
-            this.cityItem = cityItem
-            dateEpoch = SimpleDateFormat("yyyy-MM-dd", Locale(cityItem.language, cityItem.countryCode)).parse(date)!!.time
-            dateText = date
+    override fun getCityWeatherCurrent(city: String): Flow<HourlyWeatherItem> = callbackFlow {
+        val cityItem = getCityAsQuery(realm, city).findFirstAsync()
+        val currentWeatherItemListener = RealmChangeListener<HourlyWeatherItem> {
+            if (it.isValid)
+                trySend(realm.copyFromRealm(it))
+        }
+        var currentWeatherItem: HourlyWeatherItem? = null
+        cityItem.addChangeListener(RealmChangeListener<CityItem> {
+            if (it.isValid) {
+                currentWeatherItem = cityItem.weatherEveryHour
+                    .where()
+                    ?.lessThanOrEqualTo("timeEpoch", getCurrentTime())
+                    ?.sort("timeEpoch", Sort.DESCENDING)
+                    ?.findFirstAsync()
+                currentWeatherItem?.addChangeListener(currentWeatherItemListener)
+            }
+        })
+        awaitClose {
+            Log.d("MYTAG", "Get current weather closed")
+            currentWeatherItem?.removeAllChangeListeners()
+            cityItem.removeAllChangeListeners()
         }
     }
 
-    private fun queryDateItemHandler(iRealm: Realm, cityItem: CityItem, date: String): DateItem{
-        return iRealm.where(DateItem::class.java)
-            .equalTo("cityItem.id",cityItem.id)
-            .and()
-            .equalTo("dateText",date)
-            .findFirst()?:iRealm.copyToRealm(createDateItemFromStringAndLocale(date,cityItem))
+    override fun getCityWeatherForecastInDays(city: String): Flow<List<DailyWeatherItem>> =
+        callbackFlow {
+            val cityItem = getCityAsQuery(realm, city).findFirstAsync()
+            val dailyWeatherItemListener = RealmChangeListener<RealmResults<DailyWeatherItem>> {
+                if (it.isValid)
+                    trySend(realm.copyFromRealm(it))
+            }
+            var dailyWeatherItemList: RealmResults<DailyWeatherItem>? = null
+            cityItem.addChangeListener(RealmChangeListener<CityItem> {
+                if (it.isValid) {
+                    dailyWeatherItemList = cityItem?.weatherEveryDay
+                        ?.where()
+                        ?.greaterThan("dateEpoch", getCurrentTime())
+                        ?.sort("dateEpoch")
+                        ?.findAllAsync()
+                    dailyWeatherItemList?.addChangeListener(dailyWeatherItemListener)
+                }
+            })
+            awaitClose {
+                Log.d("MYTAG", "Get daily weather closed")
+                dailyWeatherItemList?.removeChangeListener(dailyWeatherItemListener)
+                cityItem.removeAllChangeListeners()
+            }
+        }
 
-    }
+    override fun getCityWeatherForecastInHours(city: String): Flow<List<HourlyWeatherItem>> =
+        callbackFlow {
+            val cityItem = getCityAsQuery(realm, city).findFirstAsync()
+            val hourlyWeatherItemListener = RealmChangeListener<RealmResults<HourlyWeatherItem>> {
+                if (it.isValid)
+                    trySend(realm.copyFromRealm(it))
+            }
+            var hourlyWeatherItemList: RealmResults<HourlyWeatherItem>? = null
+            cityItem.addChangeListener(RealmChangeListener<CityItem> {
+                if (it.isValid) {
+                    hourlyWeatherItemList = cityItem?.weatherEveryHour
+                        ?.where()
+                        ?.greaterThan("timeEpoch", getCurrentTime())
+                        ?.and()
+                        ?.lessThan("timeEpoch", getCurrentTime() + 86400)
+                        ?.sort("timeEpoch")
+                        ?.findAllAsync()
+                    hourlyWeatherItemList?.addChangeListener(hourlyWeatherItemListener)
+                }
+            })
+            awaitClose {
+                Log.d("MYTAG", "Get hourly weather closed")
+                hourlyWeatherItemList?.removeAllChangeListeners()
+                cityItem.removeAllChangeListeners()
+            }
+        }
 
 }

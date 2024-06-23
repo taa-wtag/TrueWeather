@@ -3,13 +3,21 @@ package com.rektstudios.trueweather.data.local
 import kotlinx.coroutines.flow.Flow
 
 interface IRealmDao {
-    suspend fun addCity(cityItem: CityItem)
-    suspend fun deleteCity(cityItem: CityItem)
-    suspend fun addWeather(cityItem: CityItem, date: String, weatherHourItems: List<WeatherHourItem>)
-    suspend fun addWeather(cityItem: CityItem, date: String, weatherDayItem: WeatherDayItem)
-    fun getCityList(): Flow<CityItem>
-    fun getCityWeatherCurrent(city: CityItem): Flow<WeatherHourItem?>
-    fun getCityWeatherForecastInDays(city: CityItem): Flow<WeatherDayItem>
-    fun getCityWeatherForecastInHours(city: CityItem): Flow<WeatherHourItem>
+
+    suspend fun addCity(city: String)
+
+    suspend fun deleteCity(city: String)
+
+    suspend fun <T> addWeather(city: String, weather: T)
+
+    fun getCityList(): Flow<List<CityItem>>
+
+    suspend fun getCity(city: String): CityItem?
+
+    fun getCityWeatherCurrent(city: String): Flow<HourlyWeatherItem?>
+
+    fun getCityWeatherForecastInDays(city: String): Flow<List<DailyWeatherItem>>
+
+    fun getCityWeatherForecastInHours(city: String): Flow<List<HourlyWeatherItem>>
 
 }

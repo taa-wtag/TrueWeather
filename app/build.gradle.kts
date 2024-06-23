@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.espresso.contrib)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.play.services.location)
     testImplementation (libs.core.testing)
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
@@ -115,6 +116,13 @@ dependencies {
     androidTestImplementation(libs.androidx.navigation.testing)
 
 
+    // Glide
+    implementation (libs.glide)
+    annotationProcessor (libs.glide.compiler)
+    //noinspection KaptUsageInsteadOfKsp
+    kapt(libs.glide.compiler)
+
+
     // Activity KTX for viewModels()
     implementation(libs.androidx.activity.ktx)
 
@@ -124,5 +132,11 @@ dependencies {
 
     androidTestImplementation(libs.androidx.fragment.testing)
     implementation(libs.androidx.datastore.preferences.android)
+
+    // Splash
+    implementation(libs.androidx.core.splashscreen)
+
+    // Swipe to Refresh
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
 }
