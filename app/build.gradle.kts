@@ -133,6 +133,10 @@ dependencies {
     androidTestImplementation(libs.androidx.fragment.testing)
     implementation(libs.androidx.datastore.preferences.android)
 
+    // Splash
     implementation(libs.androidx.core.splashscreen)
+
+    // Swipe to Refresh
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
 }

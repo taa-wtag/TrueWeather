@@ -122,11 +122,9 @@ class CitiesFragment : Fragment() {
                     cityItemAdapter.cityItems = it
                 }
             }
-            launch {
-                viewModel.suggestedCities.observe(viewLifecycleOwner) {
-                    searchCityAdapter.cityItems = it
-                }
-            }
+        }
+        viewModel.suggestedCities.observe(viewLifecycleOwner) {
+            searchCityAdapter.cityItems = it
         }
     }
 }

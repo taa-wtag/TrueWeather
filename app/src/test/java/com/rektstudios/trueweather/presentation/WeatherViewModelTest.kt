@@ -104,7 +104,7 @@ class WeatherViewModelTest {
 
     @Test
     fun `init - current city is set from prefs data store`() = runTest {
-        assertEquals("Tokyo, Japan", viewModel.currentCity)
+        assertEquals("Tokyo, Japan", viewModel.currentCity.value)
     }
 
     @Test
@@ -113,7 +113,7 @@ class WeatherViewModelTest {
         fakeRealmDao.addCity(city)
         viewModel.setCurrentCityAndWeather(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        assertEquals(city, viewModel.currentCity)
+        assertEquals(city, viewModel.currentCity.value)
     }
 
     @Test
@@ -121,7 +121,7 @@ class WeatherViewModelTest {
         val city = "Sapporo, Japan"
         viewModel.setCurrentCityAndWeather(city)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        assertEquals("Tokyo, Japan", viewModel.currentCity)
+        assertEquals("Tokyo, Japan", viewModel.currentCity.value)
     }
 
 
@@ -167,7 +167,7 @@ class WeatherViewModelTest {
     fun `setCurrentCityFromGPS - current city is updated`() = runTest {
         viewModel.setCurrentCityFromGPS()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        assertEquals("Los Angeles, United States", viewModel.currentCity)
+        assertEquals("Los Angeles, United States", viewModel.currentCity.value)
     }
 
 }

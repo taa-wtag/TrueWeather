@@ -31,12 +31,12 @@ class CityViewModel @Inject constructor(
         private set
     val isMetric = MutableStateFlow<Boolean?>(null)
     val isCelsius = MutableStateFlow<Boolean?>(null)
-
     init {
         viewModelScope.launch {
-            launch { getCityList() }
+            launch { getCityListUseCase().collect( cityList) }
             launch { userPrefsUseCase.getIsCelsius().collect(isCelsius) }
             launch { userPrefsUseCase.getIsMetric().collect(isMetric) }
+            cityList.collect { getCurrentWeatherUseCase(it).collect(currentWeatherForEachCity) }
         }
     }
 
@@ -48,22 +48,11 @@ class CityViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getCityList() {
-        getCityListUseCase().collect {
-            cityList.value = it
-            getCurrentWeatherUseCase(it).collect(currentWeatherForEachCity)
-        }
-    }
-
-
     fun addCity(city: String) = viewModelScope.launch {
         addCityUseCase(city)
-        getCityList()
+        getCurrentWeatherUseCase(city)
     }
 
-    fun deleteCity(city: String) = viewModelScope.launch {
-        deleteCityUseCase(city)
-    }
-
+    fun deleteCity(city: String) = viewModelScope.launch { deleteCityUseCase(city) }
 
 }

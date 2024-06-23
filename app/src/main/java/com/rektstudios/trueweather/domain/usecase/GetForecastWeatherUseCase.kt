@@ -38,7 +38,7 @@ class GetForecastWeatherUseCase @Inject constructor(
     private suspend fun getWeatherHourFromCache(city: String) =
         weatherRepository.getWeatherForecastInHoursFromCache(city)
 
-    private suspend fun getWeatherFromRemote(city: String) {
+    suspend fun getWeatherFromRemote(city: String) {
         val weather = weatherRepository.getForecastWeatherFromRemote(city).data
         weather
             ?.currentWeatherData
@@ -48,8 +48,8 @@ class GetForecastWeatherUseCase @Inject constructor(
             ?.forecastData
             ?.dailyForecastDataList
             ?.forEach { day ->
-            weatherRepository.addWeather(city, day.toHourlyWeatherItem())
-        }
+                weatherRepository.addWeather(city, day.toHourlyWeatherItem())
+            }
         weather
             ?.forecastData
             ?.dailyForecastDataList

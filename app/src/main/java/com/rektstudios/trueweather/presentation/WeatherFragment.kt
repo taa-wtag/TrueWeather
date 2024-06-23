@@ -59,6 +59,7 @@ class WeatherFragment : Fragment() {
         setupRecyclerView()
         setupViewPager()
         subscribeToObservers()
+        setupPullToRefresh()
         binding.floatingActionButtonGetLocation.setOnClickListener {
             if (isLocationPermissionGranted) {
                 viewModel.setCurrentCityFromGPS()
@@ -66,9 +67,25 @@ class WeatherFragment : Fragment() {
         }
     }
 
+    private fun setupPullToRefresh() {
+        binding.swipeRefreshLayoutWeatherFragment.setOnRefreshListener {
+            viewModel.refreshWeatherData {
+                binding.swipeRefreshLayoutWeatherFragment.isRefreshing = false
+            }
+        }
+    }
+
     private fun subscribeToObservers() {
         cityCardAdapter.navigateToCityFragment =
             { findNavController().navigate(WeatherFragmentDirections.actionWeatherFragmentToCitiesFragment()) }
+        viewModel.currentCity.observe(viewLifecycleOwner){
+            cityCardAdapter.cityItems
+                .firstOrNull { it2-> it2.first.cityName== it}
+                ?.let {
+                    val currentCityIndex = cityCardAdapter.cityItems.indexOf(it)
+                    binding.viewPagerCityCard.setCurrentItem(currentCityIndex, true)
+                }
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             launch {
                 viewModel.currentCityDailyWeatherForecast.collect {
@@ -120,7 +137,6 @@ class WeatherFragment : Fragment() {
         binding.apply {
             TabLayoutMediator(tabLayoutViewPagerDots, viewPagerCityCard) { _, _ -> }.attach()
         }
-        binding.viewPagerCityCard.setCurrentItem(0, false)
     }
 
     private val pageChangedCallback = object : OnPageChangeCallback() {

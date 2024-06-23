@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.presentation
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rektstudios.trueweather.data.local.CityItem
@@ -24,8 +25,7 @@ class WeatherViewModel @Inject constructor(
     private val getForecastWeatherUseCase: GetForecastWeatherUseCase,
     private val currentCityUseCase: CurrentCityUseCase
 ) : ViewModel() {
-    var currentCity: String = ""
-        private set
+    val currentCity = MutableLiveData("")
     val isMetric = MutableStateFlow<Boolean?>(null)
     val isCelsius = MutableStateFlow<Boolean?>(null)
     val cityList = MutableStateFlow<List<CityItem>>(emptyList())
@@ -45,27 +45,26 @@ class WeatherViewModel @Inject constructor(
         }
     }
 
-    fun setCurrentCityAndWeather(city: String) {
-        viewModelScope.launch {
-            if (city.isEmpty()) {
-                currentCity = city
-                currentCityDailyWeatherForecast.emit(emptyList())
-                currentCityHourlyWeatherForecast.emit(emptyList())
-            } else if (checkCityInCityList(city)) {
-                currentCity = city
-                launch { currentCityUseCase.setCurrentCity(city) }
-                launch { getCurrentWeatherUseCase(city) }
-                launch {
-                    getForecastWeatherUseCase.getWeatherDay(city)
-                        .collect(currentCityDailyWeatherForecast)
-                }
-                launch {
-                    getForecastWeatherUseCase.getWeatherHour(city)
-                        .collect(currentCityHourlyWeatherForecast)
-                }
+    fun setCurrentCityAndWeather(city: String) = viewModelScope.launch {
+        if (city.isEmpty()) {
+            currentCity.postValue(city)
+            currentCityDailyWeatherForecast.emit(emptyList())
+            currentCityHourlyWeatherForecast.emit(emptyList())
+        } else if (checkCityInCityList(city)) {
+            currentCity.postValue(city)
+            launch { currentCityUseCase.setCurrentCity(city) }
+            launch { getCurrentWeatherUseCase(city) }
+            launch {
+                getForecastWeatherUseCase.getWeatherDay(city)
+                    .collect(currentCityDailyWeatherForecast)
+            }
+            launch {
+                getForecastWeatherUseCase.getWeatherHour(city)
+                    .collect(currentCityHourlyWeatherForecast)
             }
         }
     }
+
 
     fun setCurrentCityFromGPS() = viewModelScope.launch {
         val cityCount = cityList.value.size
@@ -76,21 +75,26 @@ class WeatherViewModel @Inject constructor(
         }
     }
 
-
-    fun toggleMetric() {
-        viewModelScope.launch {
-            isMetric.firstOrNull()?.let { userPrefsUseCase.setMetric(!it) }
+    fun refreshWeatherData(city: String = currentCity.value ?: "", stopRefreshing: () -> Unit) = viewModelScope.launch {
+        if (city.isNotEmpty()) {
+            getForecastWeatherUseCase.getWeatherFromRemote(city)
         }
+        stopRefreshing()
     }
 
-    fun toggleCelsius() {
-        viewModelScope.launch {
-            isCelsius.firstOrNull()?.let { userPrefsUseCase.setCelsius(!it) }
-        }
+
+    fun toggleMetric() = viewModelScope.launch {
+        isMetric.firstOrNull()?.let { userPrefsUseCase.setMetric(!it) }
     }
 
-    private suspend fun checkCityInCityList(city: String): Boolean {
-        return cityList.firstOrNull()?.find { it.cityName == city } != null
+
+    fun toggleCelsius() = viewModelScope.launch {
+        isCelsius.firstOrNull()?.let { userPrefsUseCase.setCelsius(!it) }
     }
+
+
+    private suspend fun checkCityInCityList(city: String): Boolean =
+        cityList.firstOrNull()?.find { it.cityName == city } != null
+
 
 }

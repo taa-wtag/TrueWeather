@@ -1,5 +1,6 @@
 package com.rektstudios.trueweather.data.local
 
+import android.util.Log
 import com.rektstudios.trueweather.domain.util.Constants.FORECAST_MIN_TIME_PAST
 import com.rektstudios.trueweather.domain.util.Constants.MAX_BACKGROUND_COUNT
 import com.rektstudios.trueweather.domain.util.TimeUtil.Companion.getCurrentTime
@@ -123,6 +124,7 @@ class RealmDaoImpl @Inject constructor(
         }
         cityList.addChangeListener(cityListListener)
         awaitClose {
+            Log.d("MYTAG", "Get city list closed")
             cityList.removeChangeListener(cityListListener)
         }
     }
@@ -166,6 +168,7 @@ class RealmDaoImpl @Inject constructor(
             }
         })
         awaitClose {
+            Log.d("MYTAG", "Get current weather closed")
             currentWeatherItem?.removeAllChangeListeners()
             cityItem.removeAllChangeListeners()
         }
@@ -190,6 +193,7 @@ class RealmDaoImpl @Inject constructor(
                 }
             })
             awaitClose {
+                Log.d("MYTAG", "Get daily weather closed")
                 dailyWeatherItemList?.removeChangeListener(dailyWeatherItemListener)
                 cityItem.removeAllChangeListeners()
             }
@@ -216,6 +220,7 @@ class RealmDaoImpl @Inject constructor(
                 }
             })
             awaitClose {
+                Log.d("MYTAG", "Get hourly weather closed")
                 hourlyWeatherItemList?.removeAllChangeListeners()
                 cityItem.removeAllChangeListeners()
             }

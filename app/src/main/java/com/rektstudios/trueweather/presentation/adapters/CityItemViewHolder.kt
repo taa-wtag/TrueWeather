@@ -22,7 +22,7 @@ class CityItemViewHolder(private val binding: ItemCityCardFragmentBinding) :
     ) {
         hourlyWeatherItem?.let {
             if (it.isValid && it.isLoaded) {
-                binding.textViewCityCardFragmentTemperature.text = it.tempC?.toInt().toString()
+                binding.textViewCityCardFragmentTemperature.text = it.feelsLikeC?.toInt().toString()
                 binding.textViewCityCardFragmentCondition.text =
                     it.conditionText?.let { it1 -> getShortCondition(it1) }
                 glide.load(it.imageUrl).into(binding.imageViewCityCardFragmentCondition)
