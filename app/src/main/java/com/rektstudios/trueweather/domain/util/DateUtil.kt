@@ -5,7 +5,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class DateUtil {
-
     companion object {
         fun getDayOfWeek(dateString: String): String {
             val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString)
@@ -23,5 +22,4 @@ class DateUtil {
             return formatter.format(calendar.time)
         }
     }
-
 }

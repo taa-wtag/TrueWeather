@@ -1,11 +1,12 @@
 package com.rektstudios.trueweather.data.reponse.weather
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ForecastWeatherResponse(
-    @SerializedName("current")
+    @SerialName("current")
     val currentWeatherData: HourlyWeatherData?,
-
-    @SerializedName("forecast")
-    val forecastData: ForecastData?
+    @SerialName("forecast")
+    val forecastData: ForecastData?,
 )

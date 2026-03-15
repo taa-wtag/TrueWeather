@@ -10,7 +10,7 @@ data class MapboxQuery(
     var limit: Int = SEARCH_LIMIT,
     var country: String? = null,
     var types: String = "place",
-    var accessToken: String = BuildConfig.TOKEN_KEY
+    var accessToken: String = BuildConfig.TOKEN_KEY,
 )
 
 fun MapboxQuery.toMap(): Map<String, String> {

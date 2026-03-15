@@ -1,31 +1,55 @@
 package com.rektstudios.trueweather.data.reponse.weather
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonTransformingSerializer
 
+@Serializable
 data class HourlyWeatherData(
-    @SerializedName("condition")
+    @SerialName("condition")
     val weatherCondition: WeatherCondition?,
-    @SerializedName("feelslike_c")
+    @SerialName("feelslike_c")
     val feelsLikeC: Double?,
-    @SerializedName("feelslike_f")
+    @SerialName("feelslike_f")
     val feelsLikeF: Double?,
     val humidity: Int?,
-    @SerializedName("is_day")
+    @SerialName("is_day")
     val isDay: Int?,
-    @SerializedName("temp_c")
+    @SerialName("temp_c")
     val tempC: Double?,
-    @SerializedName("temp_f")
+    @SerialName("temp_f")
     val tempF: Double?,
-    @SerializedName("time", alternate = ["last_updated"])
-    val timeString: String?,
-    @SerializedName("time_epoch", alternate = ["last_updated_epoch"])
-    val timeEpoch: Int?,
-    @SerializedName("vis_km")
+    @Serializable(with = TimeSerializer::class)
+    val timeString: String? = null,
+    @Serializable(with = EpochSerializer::class)
+    val timeEpoch: Int? = null,
+    @SerialName("vis_km")
     val visKm: Double?,
-    @SerializedName("vis_miles")
+    @SerialName("vis_miles")
     val visMiles: Double?,
-    @SerializedName("wind_kph")
+    @SerialName("wind_kph")
     val windKph: Double?,
-    @SerializedName("wind_mph")
+    @SerialName("wind_mph")
     val windMph: Double?,
 )
+
+object TimeSerializer : JsonTransformingSerializer<String>(String.serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement =
+        if (element is JsonObject) {
+            element["time"] ?: element["last_updated"] ?: kotlinx.serialization.json.JsonNull
+        } else {
+            element
+        }
+}
+
+object EpochSerializer : JsonTransformingSerializer<String>(String.serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement =
+        if (element is JsonObject) {
+            element["time_epoch"] ?: element["last_updated_epoch"] ?: kotlinx.serialization.json.JsonNull
+        } else {
+            element
+        }
+}

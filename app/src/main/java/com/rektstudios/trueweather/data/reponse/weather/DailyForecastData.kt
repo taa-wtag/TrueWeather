@@ -1,14 +1,16 @@
 package com.rektstudios.trueweather.data.reponse.weather
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DailyForecastData(
-    @SerializedName("date")
+    @SerialName("date")
     val dateString: String?,
-    @SerializedName("date_epoch")
+    @SerialName("date_epoch")
     val dateEpoch: Int?,
-    @SerializedName("day")
+    @SerialName("day")
     val dailyWeatherData: DailyWeatherData?,
-    @SerializedName("hour")
-    val hourlyWeatherDataList: List<HourlyWeatherData>?
+    @SerialName("hour")
+    val hourlyWeatherDataList: List<HourlyWeatherData>?,
 )

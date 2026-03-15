@@ -1,12 +1,14 @@
 package com.rektstudios.trueweather.domain.mapper
 
-import com.rektstudios.trueweather.data.local.DailyWeatherItem
-import com.rektstudios.trueweather.data.local.HourlyWeatherItem
+import com.rektstudios.trueweather.data.local.entity.DailyWeatherEntity
+import com.rektstudios.trueweather.data.local.entity.HourlyWeatherEntity
 import com.rektstudios.trueweather.data.reponse.weather.DailyForecastData
 import com.rektstudios.trueweather.data.reponse.weather.HourlyWeatherData
 
-fun HourlyWeatherData.toHourlyWeatherItem(): HourlyWeatherItem {
-    return HourlyWeatherItem(
+fun HourlyWeatherData.toHourlyWeatherItem(cityName: String): HourlyWeatherEntity =
+    HourlyWeatherEntity(
+        0,
+        cityName,
         timeEpoch?.toLong(),
         timeString,
         tempC,
@@ -22,16 +24,17 @@ fun HourlyWeatherData.toHourlyWeatherItem(): HourlyWeatherItem {
         weatherCondition?.text,
         "https:" + weatherCondition?.icon,
     )
-}
 
-fun DailyForecastData.toHourlyWeatherItem(): List<HourlyWeatherItem> =
+fun DailyForecastData.toHourlyWeatherItem(cityName: String): List<HourlyWeatherEntity> =
     this.hourlyWeatherDataList?.map {
-        it.toHourlyWeatherItem()
+        it.toHourlyWeatherItem(cityName)
     } ?: emptyList()
 
-fun DailyForecastData.toDailyWeatherItem(): DailyWeatherItem? {
-    return this.dailyWeatherData?.let {
-        DailyWeatherItem(
+fun DailyForecastData.toDailyWeatherItem(cityName: String): DailyWeatherEntity? =
+    this.dailyWeatherData?.let {
+        DailyWeatherEntity(
+            0,
+            cityName,
             this.dateEpoch?.toLong(),
             this.dateString,
             it.minTempC,
@@ -46,9 +49,6 @@ fun DailyForecastData.toDailyWeatherItem(): DailyWeatherItem? {
             it.maxWindMph,
             it.avgHumidity,
             it.weatherCondition?.text,
-            "https:" + it.weatherCondition?.icon
+            "https:" + it.weatherCondition?.icon,
         )
     }
-}
-
-

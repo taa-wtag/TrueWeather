@@ -17,11 +17,11 @@ interface MapBoxApiService {
         @Query("limit") limit: Int = SEARCH_LIMIT,
         @Query("country") country: String = "",
         @Query("types") types: String = "place",
-        @Query("access_token") accessToken: String = BuildConfig.TOKEN_KEY
+        @Query("access_token") accessToken: String = BuildConfig.TOKEN_KEY,
     ): Response<SearchResponse>
 
     @GET("search/searchbox/v1/suggest")
     suspend fun searchPlaceSuggestions(
-        @QueryMap mapboxQuery: Map<String, String>
+        @QueryMap mapboxQuery: Map<String, String>,
     ): Response<SearchResponse>
 }

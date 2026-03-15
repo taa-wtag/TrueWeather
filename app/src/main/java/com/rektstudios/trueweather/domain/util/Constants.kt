@@ -4,7 +4,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import java.util.UUID
 
 object Constants {
-
     const val WEATHER_BASE_URL = "https://api.weatherapi.com/v1/"
     const val MAPBOX_BASE_URL = "https://api.mapbox.com/"
     const val SERVER_ERROR_MESSAGE = "Couldn't reach the server. Check your internet connection"
@@ -18,11 +17,9 @@ object Constants {
     const val CITY_GRID_SPAN = 2
     const val MAX_BACKGROUND_COUNT = 6
 
-
     val USER_UUID = UUID.randomUUID().toString()
 
     val KEY_CITY_NAME = stringPreferencesKey("city_name")
     val KEY_METRIC = stringPreferencesKey("metric")
     val KEY_CELSIUS = stringPreferencesKey("celsius")
-
 }

@@ -12,4 +12,3 @@ fun PlaceResponse.toListCityName(): List<String> =
     mapNotNull { city ->
         city.cityName + ", " + city.countryName
     }
-

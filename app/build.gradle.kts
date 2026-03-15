@@ -1,27 +1,27 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.dagger.hilt.android")
-    id("androidx.navigation.safeargs.kotlin")
-    id("com.google.devtools.ksp")
-    id("kotlin-kapt")
-    id ("realm-android")
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp.plugin)
+    alias(libs.plugins.hilt.plugin)
 }
 
 android {
     namespace = "com.rektstudios.trueweather"
-    compileSdk = 34
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "com.rektstudios.trueweather"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
-
-        buildConfigField( "String", "API_KEY", "${properties.getValue("API_KEY")}")
-        buildConfigField( "String", "TOKEN_KEY", "${properties.getValue("TOKEN_KEY")}")
+        buildConfigField("String", "API_KEY", "\"${project.findProperty("API_KEY") ?: ""}\"")
+        buildConfigField("String", "TOKEN_KEY", "\"${properties.getValue("TOKEN_KEY") ?: ""}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,48 +36,56 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures{
-        viewBinding = true
+    buildFeatures {
+        compose = true
         buildConfig = true
-    }
-    hilt {
-        enableAggregatingTask = true
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.runner)
-    implementation(libs.androidx.espresso.contrib)
-    implementation(libs.androidx.legacy.support.v4)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.play.services.location)
-    testImplementation (libs.core.testing)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
-    testImplementation(libs.junit.jupiter)
-    testImplementation (libs.truth)
-    testImplementation (libs.mockito.kotlin)
-    testImplementation (libs.kotlinx.coroutines.test)
-    androidTestImplementation (libs.core.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation (libs.truth)
-    androidTestImplementation (libs.mockito.kotlin)
-    androidTestImplementation (libs.kotlinx.coroutines.test)
-    implementation(libs.mockito.android)
-    androidTestImplementation (libs.mockito.android)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    implementation(libs.serializer.ktx)
+
+    // Navigation 3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+
+
+    // Glide
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
+
+    // Splash
+    implementation(libs.androidx.core.splashscreen)
+
+    // Datastore
+    implementation(libs.datastore.preferences)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.ktx)
+
+    // Dagger - Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     // Coroutine
     implementation(libs.kotlinx.coroutines.core)
@@ -86,57 +94,13 @@ dependencies {
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation (libs.androidx.lifecycle.runtime)
 
-    // LiveData
-    implementation(libs.androidx.lifecycle.livedata.ktx)
+    // Play Services
+    implementation(libs.play.services.location)
 
-    // Dagger - Hilt
-    implementation (libs.hilt.android)
-    ksp (libs.hilt.compiler)
-    ksp (libs.androidx.hilt.compiler)
-
-    // For instrumentation tests
-    androidTestImplementation  (libs.hilt.android.testing)
-    kspAndroidTest (libs.hilt.compiler)
-
-    // For local unit tests
-    testImplementation (libs.hilt.android.testing)
-    kspTest (libs.hilt.compiler)
-
-    // Retrofit
-    implementation (libs.retrofit)
-    implementation (libs.converter.gson)
-
-    // Navigation
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-
-    // Testing Navigation
-    androidTestImplementation(libs.androidx.navigation.testing)
-
-
-    // Glide
-    implementation (libs.glide)
-    annotationProcessor (libs.glide.compiler)
-    //noinspection KaptUsageInsteadOfKsp
-    kapt(libs.glide.compiler)
-
-
-    // Activity KTX for viewModels()
-    implementation(libs.androidx.activity.ktx)
-
-    debugImplementation(libs.androidx.fragment.testing)
-
-    androidTestImplementation(libs.androidx.fragment)
-
-    androidTestImplementation(libs.androidx.fragment.testing)
-    implementation(libs.androidx.datastore.preferences.android)
-
-    // Splash
-    implementation(libs.androidx.core.splashscreen)
-
-    // Swipe to Refresh
-    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
+    // Room
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+    implementation(libs.room.ktx)
+    implementation(libs.room.paging)
 }

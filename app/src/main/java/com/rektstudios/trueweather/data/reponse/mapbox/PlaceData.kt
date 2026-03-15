@@ -1,8 +1,10 @@
 package com.rektstudios.trueweather.data.reponse.mapbox
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PlaceData(
-    @SerializedName("country")
+    @SerialName("country")
     val countryData: CountryData?,
 )

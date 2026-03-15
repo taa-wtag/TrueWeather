@@ -2,10 +2,11 @@ package com.rektstudios.trueweather.domain.util
 
 import retrofit2.Response
 
-class CheckResponseUtil<T>(private val response: Response<T>) {
-
-    fun checkResponse(): Resource<T> {
-        return if (response.isSuccessful) {
+class CheckResponseUtil<T>(
+    private val response: Response<T>,
+) {
+    fun checkResponse(): Resource<T> =
+        if (response.isSuccessful) {
             response.body()?.let {
                 Resource.Success(it)
             } ?: Resource.Error("Empty body")
@@ -16,7 +17,4 @@ class CheckResponseUtil<T>(private val response: Response<T>) {
                 Resource.Error(response.errorBody()?.string() ?: "Default Error")
             }
         }
-    }
-
 }
-
