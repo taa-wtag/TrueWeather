@@ -41,7 +41,7 @@ class CityRepositoryImpl
             }
 
         override suspend fun addCity(city: String) {
-            realmDao.addCity(CityEntity(cityName = city, backgroundColor = Random().nextInt(MAX_BACKGROUND_COUNT - 1) + 1))
+            realmDao.addCity(CityEntity(cityName = city, backgroundColor = Random().nextInt(MAX_BACKGROUND_COUNT - 1)))
         }
 
         override suspend fun deleteCity(city: String) {
