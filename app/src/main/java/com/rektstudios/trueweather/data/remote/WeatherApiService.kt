@@ -1,6 +1,7 @@
 package com.rektstudios.trueweather.data.remote
 
 import com.rektstudios.trueweather.BuildConfig
+import com.rektstudios.trueweather.data.reponse.weather.CityData
 import com.rektstudios.trueweather.data.reponse.weather.CurrentWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.ForecastWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
@@ -26,7 +27,7 @@ interface WeatherApiService {
     suspend fun getCityName(
         @Query("key") apiKey: String = BuildConfig.API_KEY,
         @Query("q") latLon: String,
-    ): Response<PlaceResponse>
+    ): Response<List<CityData>>
 
     @GET("search.json")
     suspend fun searchCity(

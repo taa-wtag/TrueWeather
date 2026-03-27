@@ -4,10 +4,12 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.rektstudios.trueweather.domain.data.DailyWeatherData
+import com.rektstudios.trueweather.domain.util.DateUtil
 
 @Entity(
     tableName = "daily_weather_table",
-    indices = [Index(value = ["dateEpoch"], unique = true)],
+    indices = [Index(value = ["cityName", "dateEpoch"], unique = true)],
     foreignKeys = [
         ForeignKey(
             entity = CityEntity::class,
@@ -35,4 +37,12 @@ data class DailyWeatherEntity(
     val avgHumidity: Int? = null,
     val conditionText: String? = null,
     val imageUrl: String? = null,
-)
+) : Weather
+
+fun DailyWeatherEntity.toDailyWeatherData(isCelsius: Boolean) =
+    DailyWeatherData(
+        dayOfWeek = dateString?.let { DateUtil.getDayOfWeek(it) }.orEmpty(),
+        maxTemp = (if (isCelsius) maxTempC else maxTempF)?.toString().orEmpty(),
+        minTemp = (if (isCelsius) minTempC else minTempF)?.toString().orEmpty(),
+        imageUrl = imageUrl.orEmpty(),
+    )

@@ -1,7 +1,5 @@
 package com.rektstudios.trueweather.presentation.ui
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,23 +18,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rektstudios.trueweather.R
+import coil.compose.AsyncImage
+import com.rektstudios.trueweather.domain.data.CityCardData
 import com.rektstudios.trueweather.presentation.ui.theme.PoppinsFontFamily
 
 @Composable
 fun LargeCityCard(
-    cityName: String,
-    countryName: String,
-    temperature: String,
-    condition: String,
-    date: String,
-    backgroundColor: CardGradientBackgroundColor,
-    @DrawableRes conditionIconRes: Int,
+    data: CityCardData,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -56,7 +48,7 @@ fun LargeCityCard(
                     .fillMaxSize()
                     .defaultMinSize(minWidth = 300.dp, minHeight = 200.dp),
         ) {
-            LargeCardBackground(color = backgroundColor, modifier = Modifier.fillMaxSize())
+            LargeCardBackground(color = CardGradientBackgroundColor.getColor(data.backgroundColor), modifier = Modifier.fillMaxSize())
 
             Column(
                 modifier =
@@ -65,7 +57,7 @@ fun LargeCityCard(
                         .padding(20.dp),
             ) {
                 Text(
-                    text = cityName,
+                    text = data.cityName,
                     fontFamily = PoppinsFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -80,7 +72,7 @@ fun LargeCityCard(
                         modifier = modifier.fillMaxHeight(),
                     ) {
                         Text(
-                            text = countryName,
+                            text = data.countryName,
                             fontFamily = PoppinsFontFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
@@ -95,7 +87,7 @@ fun LargeCityCard(
                             verticalAlignment = Alignment.Top,
                         ) {
                             Text(
-                                text = temperature,
+                                text = data.apparentTemp,
                                 fontFamily = PoppinsFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 38.sp,
@@ -111,7 +103,7 @@ fun LargeCityCard(
                         }
 
                         Text(
-                            text = date,
+                            text = data.fullDate,
                             fontFamily = PoppinsFontFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 11.sp,
@@ -122,13 +114,13 @@ fun LargeCityCard(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Image(
-                            painter = painterResource(id = conditionIconRes),
-                            contentDescription = condition,
+                        AsyncImage(
+                            model = data.imageUrl,
+                            contentDescription = data.mediumCondition,
                             modifier = Modifier.size(100.dp),
                         )
                         Text(
-                            text = condition,
+                            text = data.mediumCondition,
                             fontFamily = PoppinsFontFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp,
@@ -151,12 +143,14 @@ fun LargeCityCard(
 @Composable
 fun LargeCityCardPreview() {
     LargeCityCard(
-        cityName = "New York",
-        countryName = "United States",
-        temperature = "12",
-        condition = "Partly Cloudy",
-        date = "Mon, 16 Mar",
-        backgroundColor = CardGradientBackgroundColor.Orange,
-        conditionIconRes = R.drawable.ic_image,
+        CityCardData(
+            name = "London, United Kingdom",
+            fullDate = "12-12-2020",
+            temp = "18",
+            apparentTemp = "28",
+            condition = "Cloudy",
+            imageUrl = "",
+            backgroundColor = 1,
+        ),
     )
 }

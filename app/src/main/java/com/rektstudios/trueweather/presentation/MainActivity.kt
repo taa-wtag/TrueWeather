@@ -11,7 +11,9 @@ import androidx.navigation3.ui.NavDisplay
 import com.rektstudios.trueweather.presentation.ui.CitiesScreen
 import com.rektstudios.trueweather.presentation.ui.HomeScreen
 import com.rektstudios.trueweather.presentation.ui.theme.TrueWeatherTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

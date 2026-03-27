@@ -50,13 +50,15 @@ sealed class CardGradientBackgroundColor {
         override val third: Color = Color(0xFF5781f0)
     }
 
-    fun getColor(value: Int) =
-        when (value) {
-            1 -> Blue
-            2 -> Red
-            3 -> Violet
-            4 -> Green
-            5 -> Orange
-            else -> Purple
-        }
+    companion object {
+        fun getColor(value: Int) =
+            when (value) {
+                1 -> Blue
+                2 -> Red
+                3 -> Violet
+                4 -> Green
+                5 -> Orange
+                else -> Purple
+            }
+    }
 }

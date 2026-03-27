@@ -1,12 +1,18 @@
 package com.rektstudios.trueweather.domain.repository
 
 import com.rektstudios.trueweather.data.local.entity.CityEntity
+import com.rektstudios.trueweather.data.reponse.mapbox.GeoJsonResponse
 import com.rektstudios.trueweather.data.reponse.mapbox.SearchResponse
 import com.rektstudios.trueweather.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface ICityRepository {
     suspend fun searchForPlaces(searchQuery: String): Resource<SearchResponse>
+
+    suspend fun reverseGeocodePlaces(
+        longitude: Double,
+        latitude: Double,
+    ): Resource<GeoJsonResponse>
 
     suspend fun addCity(city: String)
 

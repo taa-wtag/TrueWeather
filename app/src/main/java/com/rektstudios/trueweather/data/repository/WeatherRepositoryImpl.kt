@@ -3,7 +3,9 @@ package com.rektstudios.trueweather.data.repository
 import com.rektstudios.trueweather.data.local.dao.IDatabaseDao
 import com.rektstudios.trueweather.data.local.entity.DailyWeatherEntity
 import com.rektstudios.trueweather.data.local.entity.HourlyWeatherEntity
+import com.rektstudios.trueweather.data.local.entity.Weather
 import com.rektstudios.trueweather.data.remote.WeatherApiService
+import com.rektstudios.trueweather.data.reponse.weather.CityData
 import com.rektstudios.trueweather.data.reponse.weather.CurrentWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.ForecastWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
@@ -60,7 +62,7 @@ class WeatherRepositoryImpl
             days: Int,
         ): Flow<List<HourlyWeatherEntity>> = realmDao.getCityWeatherForecastInHours(city)
 
-        override suspend fun <T> addWeather(
+        override suspend fun <T : Weather> addWeather(
             city: String,
             weather: T,
         ) {
@@ -73,7 +75,7 @@ class WeatherRepositoryImpl
         override suspend fun getCityNameFromRemote(
             lat: Double,
             lon: Double,
-        ): Resource<PlaceResponse> =
+        ): Resource<List<CityData>> =
             withContext(Dispatchers.IO) {
                 try {
                     CheckResponseUtil(weatherApiService.getCityName(latLon = "$lat, $lon")).checkResponse()

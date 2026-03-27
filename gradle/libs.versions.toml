@@ -9,7 +9,7 @@ lifecycleKtx = "2.10.0"
 activityCompose = "1.13.0"
 kotlin = "2.3.20"
 composeBom = "2026.03.01"
-glide = "5.0.5"
+coil = "2.7.0"
 hiltAndroid = "2.59.2"
 datastore = "1.2.1"
 playServicesLocation = "21.3.0"
@@ -29,6 +29,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleKtx" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleKtx" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -49,8 +50,7 @@ serializer-ktx = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", 
 datastore-preferences = { module = "androidx.datastore:datastore-preferences-android", version.ref = "datastore" }
 
 
-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
-glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+coil = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }

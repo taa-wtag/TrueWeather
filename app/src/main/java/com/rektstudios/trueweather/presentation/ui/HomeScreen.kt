@@ -1,5 +1,11 @@
 package com.rektstudios.trueweather.presentation.ui
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,40 +31,107 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rektstudios.trueweather.R
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rektstudios.trueweather.presentation.ui.theme.PoppinsFontFamily
 import com.rektstudios.trueweather.presentation.ui.theme.WeatherHourSelectedBackground
 import com.rektstudios.trueweather.presentation.ui.theme.WeatherHourSelectedForeground
+import com.rektstudios.trueweather.presentation.viewmodels.WeatherViewModel
 
 @Composable
 fun HomeScreen(
     onAddClick: () -> Unit,
+    viewModel: WeatherViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
-    // State for the SwipeRefreshLayout equivalent
+    val context = LocalContext.current
+
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Pager state (mocking 3 pages for the city cards)
-    val pageCount = 3
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val cityList by viewModel.cityCardList.collectAsState()
+    val cityState by viewModel.currentCityState.collectAsState()
+
+    val pagerState = rememberPagerState { cityList.size + 1 }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }.collect { index ->
+            viewModel.setCurrentCity(if (index < pagerState.pageCount - 1) cityList[index].name else "")
+        }
+    }
+
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED,
+        )
+    }
+
+    val settingResultLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartIntentSenderForResult(),
+        ) { activityResult ->
+            if (activityResult.resultCode == Activity.RESULT_OK) {
+                viewModel.setCurrentCityFromGPS()
+            } else {
+                Toast.makeText(context, "Refused to turn on Location", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { isGranted: Boolean ->
+            hasLocationPermission = isGranted
+            if (isGranted) {
+                checkLocationSetting(
+                    context = context,
+                    onDisabled = { intentSenderRequest ->
+                        settingResultLauncher.launch(intentSenderRequest)
+                    },
+                    onEnabled = {
+                        viewModel.setCurrentCityFromGPS()
+                    },
+                )
+            }
+        }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = {
+                    if (!hasLocationPermission) {
+                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    } else {
+                        checkLocationSetting(
+                            context = context,
+                            onDisabled = { intentSenderRequest ->
+                                settingResultLauncher.launch(intentSenderRequest)
+                            },
+                            onEnabled = {
+                                viewModel.setCurrentCityFromGPS()
+                            },
+                        )
+                    }
+                },
                 shape = CircleShape,
                 containerColor = WeatherHourSelectedBackground,
                 contentColor = WeatherHourSelectedForeground,
@@ -75,12 +148,13 @@ fun HomeScreen(
             isRefreshing = isRefreshing,
             onRefresh = {
                 isRefreshing = true
-                // In a real app, set isRefreshing = false when data loads
+                viewModel.refreshWeatherData { isRefreshing = false }
             },
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(scaffoldPadding),
+                    .padding(scaffoldPadding)
+                    .background(Color.White),
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(
@@ -91,13 +165,12 @@ fun HomeScreen(
                             .aspectRatio(1.6f),
                 ) { page ->
                     if (page < pagerState.pageCount - 1) {
-                        LargeCityCard("BD", "BD", "30", "Sunny", "Today", CardGradientBackgroundColor.Purple, R.drawable.ic_image)
+                        LargeCityCard(cityList[page])
                     } else {
                         LargeAddCityCard(onAddClick)
                     }
                 }
 
-                // 2. TabLayout Equivalent (Dot Indicators)
                 PagerIndicator(
                     pageCount = pagerState.pageCount,
                     currentPage = pagerState.currentPage,
@@ -132,8 +205,10 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             contentPadding = PaddingValues(horizontal = 20.dp),
                         ) {
-                            items(20) { index ->
-                                WeatherHourCard("22:00", "Sunny", index == 0, R.drawable.ic_image)
+                            val list = cityState.hourlyWeatherCardData
+                            items(list.size) { index -> WeatherHourCard(list[index], index == 0) }
+                            if (list.isEmpty()) {
+                                item { WeatherHourPlaceHolderCard() }
                             }
                         }
                         Text(
@@ -150,9 +225,8 @@ fun HomeScreen(
                                 ),
                         )
                     }
-                    items(20) { index ->
-                        WeatherDayItem("Wednesday $index", R.drawable.ic_image, "22", "27")
-                    }
+                    val list = cityState.dailyWeatherData
+                    items(list.size) { index -> WeatherDayItem(list[index]) }
                 }
             }
         }

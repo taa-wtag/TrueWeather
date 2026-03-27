@@ -4,10 +4,12 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.rektstudios.trueweather.domain.data.HourlyWeatherCardData
+import com.rektstudios.trueweather.domain.util.WeatherConditionMapperUtil
 
 @Entity(
     tableName = "hourly_weather_table",
-    indices = [Index(value = ["timeEpoch"], unique = true)],
+    indices = [Index(value = ["cityName", "timeEpoch"], unique = true)],
     foreignKeys = [
         ForeignKey(
             entity = CityEntity::class,
@@ -17,21 +19,30 @@ import androidx.room.PrimaryKey
         ),
     ],
 )
-open class HourlyWeatherEntity(
+data class HourlyWeatherEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val cityName: String,
-    var timeEpoch: Long? = null,
-    var timeString: String? = null,
-    var tempC: Double? = null,
-    var tempF: Double? = null,
-    var feelsLikeC: Double? = null,
-    var feelsLikeF: Double? = null,
-    var visKm: Double? = null,
-    var visMiles: Double? = null,
-    var windKph: Double? = null,
-    var windMph: Double? = null,
-    var humidity: Int? = null,
-    var isDay: Int? = null,
-    var conditionText: String? = null,
-    var imageUrl: String? = null,
-)
+    val timeEpoch: Long,
+    val timeString: String? = null,
+    val tempC: Double? = null,
+    val tempF: Double? = null,
+    val feelsLikeC: Double? = null,
+    val feelsLikeF: Double? = null,
+    val visKm: Double? = null,
+    val visMiles: Double? = null,
+    val windKph: Double? = null,
+    val windMph: Double? = null,
+    val humidity: Int? = null,
+    val isDay: Int? = null,
+    val conditionText: String? = null,
+    val imageUrl: String? = null,
+) : Weather
+
+fun HourlyWeatherEntity.toWeatherHourCardData() =
+    HourlyWeatherCardData(
+        timeInHours = timeString?.substringAfter(" ").orEmpty(),
+        condition = conditionText?.let { WeatherConditionMapperUtil.getShortCondition(it) }.orEmpty(),
+        imageUrl = imageUrl.orEmpty(),
+    )
+
+sealed interface Weather

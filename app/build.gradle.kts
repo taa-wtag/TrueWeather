@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp.plugin)
     alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.ktx.serializer)
 }
 
 android {
@@ -71,8 +72,7 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
 
     // Glide
-    implementation(libs.glide)
-    annotationProcessor(libs.glide.compiler)
+    implementation(libs.coil)
 
     // Splash
     implementation(libs.androidx.core.splashscreen)
@@ -94,6 +94,7 @@ dependencies {
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     // Play Services

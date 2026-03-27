@@ -1,7 +1,5 @@
 package com.rektstudios.trueweather.presentation.ui
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,22 +16,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rektstudios.trueweather.R
+import coil.compose.AsyncImage
+import com.rektstudios.trueweather.domain.data.HourlyWeatherCardData
 import com.rektstudios.trueweather.presentation.ui.theme.PoppinsFontFamily
 import com.rektstudios.trueweather.presentation.ui.theme.WeatherHourSelectedBackground
 import com.rektstudios.trueweather.presentation.ui.theme.WeatherHourSelectedForeground
 
 @Composable
 fun WeatherHourCard(
-    time: String,
-    condition: String,
+    data: HourlyWeatherCardData,
     isCurrent: Boolean = false,
-    @DrawableRes iconRes: Int,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -62,16 +58,16 @@ fun WeatherHourCard(
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {
             Text(
-                text = time,
+                text = data.timeInHours,
                 fontFamily = PoppinsFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
                 color = if (isCurrent) WeatherHourSelectedForeground else Color.LightGray,
             )
 
-            Image(
-                painter = painterResource(id = iconRes),
-                contentDescription = condition,
+            AsyncImage(
+                model = data.imageUrl,
+                contentDescription = data.condition,
                 contentScale = ContentScale.FillWidth,
                 modifier =
                     Modifier
@@ -80,7 +76,7 @@ fun WeatherHourCard(
             )
 
             Text(
-                text = condition,
+                text = data.condition,
                 fontFamily = PoppinsFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
@@ -100,10 +96,12 @@ fun WeatherHourCard(
 @Composable
 fun WeatherHourCardCurrentPreview() {
     WeatherHourCard(
-        time = "02:00",
-        condition = "Blizzard",
+        HourlyWeatherCardData(
+            timeInHours = "02:00",
+            condition = "Blizzard",
+            imageUrl = "",
+        ),
         isCurrent = true,
-        iconRes = R.drawable.ic_image,
         modifier = Modifier.padding(16.dp),
     )
 }
@@ -118,10 +116,12 @@ fun WeatherHourCardCurrentPreview() {
 @Composable
 fun WeatherHourCardDefaultPreview() {
     WeatherHourCard(
-        time = "02:00",
-        condition = "Blizzard",
+        HourlyWeatherCardData(
+            timeInHours = "02:00",
+            condition = "Blizzard",
+            imageUrl = "",
+        ),
         isCurrent = false,
-        iconRes = R.drawable.ic_image,
         modifier = Modifier.padding(16.dp),
     )
 }

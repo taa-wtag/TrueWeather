@@ -1,8 +1,7 @@
 package com.rektstudios.trueweather.presentation.ui
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,31 +22,39 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rektstudios.trueweather.R
+import coil.compose.AsyncImage
+import com.rektstudios.trueweather.domain.data.CityCardData
 import com.rektstudios.trueweather.presentation.ui.theme.PoppinsFontFamily
 
 @Composable
 fun SmallCityCard(
-    cityName: String,
-    countryName: String,
-    temperature: String,
-    condition: String,
-    backgroundColor: CardGradientBackgroundColor,
-    @DrawableRes conditionIconRes: Int,
-    isDeleteVisible: Boolean = false,
-    onDeleteClick: () -> Unit = {},
+    data: CityCardData,
+    onDeleteClick: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
+    var isDeleteVisible by remember { mutableStateOf(false) }
+
+    Box(
+        modifier =
+            modifier.combinedClickable(
+                onLongClick = { isDeleteVisible = !isDeleteVisible },
+                onDoubleClick = {},
+                hapticFeedbackEnabled = true,
+                onClick = {},
+            ),
+    ) {
         Card(
             modifier =
                 Modifier
@@ -59,7 +66,7 @@ fun SmallCityCard(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 SmallCardBackground(
-                    backgroundColor,
+                    CardGradientBackgroundColor.getColor(data.backgroundColor),
                     Modifier.fillMaxSize(),
                 )
 
@@ -70,14 +77,14 @@ fun SmallCityCard(
                             .padding(start = 28.dp, top = 26.dp),
                 ) {
                     Text(
-                        text = cityName,
+                        text = data.cityName,
                         fontFamily = PoppinsFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = Color.White,
                     )
                     Text(
-                        text = countryName,
+                        text = data.countryName,
                         fontFamily = PoppinsFontFamily,
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp,
@@ -90,7 +97,7 @@ fun SmallCityCard(
                     verticalAlignment = Alignment.Top,
                 ) {
                     Text(
-                        text = temperature,
+                        text = data.apparentTemp,
                         fontFamily = PoppinsFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 34.sp,
@@ -112,14 +119,14 @@ fun SmallCityCard(
                             .padding(start = 16.dp, bottom = 28.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Image(
-                        painter = painterResource(id = conditionIconRes),
-                        contentDescription = condition,
+                    AsyncImage(
+                        model = data.imageUrl,
+                        contentDescription = data.mediumCondition,
                         modifier = Modifier.size(35.dp),
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = condition,
+                        text = data.shortCondition,
                         fontFamily = PoppinsFontFamily,
                         fontWeight = FontWeight.Medium,
                         fontSize = 16.sp,
@@ -131,12 +138,15 @@ fun SmallCityCard(
 
         if (isDeleteVisible) {
             IconButton(
-                onClick = onDeleteClick,
+                onClick = {
+                    onDeleteClick(data.name)
+                    isDeleteVisible = false
+                },
                 modifier =
                     Modifier
                         .align(Alignment.TopEnd)
                         .padding(end = 4.dp, top = 4.dp)
-                        .size(26.dp)
+                        .size(32.dp)
                         .shadow(elevation = 5.dp, shape = CircleShape)
                         .background(Color.Red, shape = CircleShape),
             ) {
@@ -161,32 +171,14 @@ fun SmallCityCard(
 @Composable
 fun SmallCityCardPreview() {
     SmallCityCard(
-        cityName = "London",
-        countryName = "United Kingdom",
-        temperature = "18",
-        condition = "Cloudy",
-        backgroundColor = CardGradientBackgroundColor.Red,
-        conditionIconRes = R.drawable.ic_image,
-        isDeleteVisible = false,
-    )
-}
-
-@Preview(
-    name = "City Card (Edit Mode)",
-    showBackground = true,
-    backgroundColor = 0xFFE0E0E0,
-    widthDp = 400,
-    heightDp = 300,
-)
-@Composable
-fun SmallCityCardEditModePreview() {
-    SmallCityCard(
-        cityName = "Tokyo",
-        countryName = "Japan",
-        temperature = "24",
-        condition = "Sunny",
-        backgroundColor = CardGradientBackgroundColor.Blue,
-        conditionIconRes = R.drawable.ic_image,
-        isDeleteVisible = true,
+        CityCardData(
+            name = "London, United Kingdom",
+            fullDate = "",
+            temp = "18",
+            apparentTemp = "28",
+            condition = "Cloudy",
+            imageUrl = "",
+            backgroundColor = 2,
+        ),
     )
 }

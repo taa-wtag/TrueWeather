@@ -6,8 +6,10 @@ import com.rektstudios.trueweather.domain.mapper.toDailyWeatherItem
 import com.rektstudios.trueweather.domain.mapper.toHourlyWeatherItem
 import com.rektstudios.trueweather.domain.repository.IWeatherRepository
 import com.rektstudios.trueweather.domain.util.Constants.FORECAST_MAX_DAYS
+import com.rektstudios.trueweather.domain.util.TimeUtil.Companion.getCurrentTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetForecastWeatherUseCase
@@ -19,7 +21,8 @@ class GetForecastWeatherUseCase
             val current = getWeatherHourFromCache(city)
             current
                 .firstOrNull()
-                ?.let { if (it.isNotEmpty()) return current }
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { return current }
             getWeatherFromRemote(city)
             return getWeatherHourFromCache(city)
         }
@@ -28,14 +31,23 @@ class GetForecastWeatherUseCase
             val current = getWeatherDayFromCache(city)
             current
                 .firstOrNull()
-                ?.let { if (it.isNotEmpty() && it.size >= FORECAST_MAX_DAYS - 1) return current }
+                ?.takeIf { it.isNotEmpty() && it.size >= FORECAST_MAX_DAYS - 1 }
+                ?.let { return current }
             getWeatherFromRemote(city)
             return getWeatherDayFromCache(city)
         }
 
-        private suspend fun getWeatherDayFromCache(city: String) = weatherRepository.getWeatherForecastInDaysFromCache(city)
+        private suspend fun getWeatherDayFromCache(city: String) =
+            weatherRepository
+                .getWeatherForecastInDaysFromCache(city)
+                .map { list ->
+                    list.filter { day -> day.dateEpoch?.minus(getCurrentTime())?.let { it > 0 } ?: false }
+                }
 
-        private suspend fun getWeatherHourFromCache(city: String) = weatherRepository.getWeatherForecastInHoursFromCache(city)
+        private suspend fun getWeatherHourFromCache(city: String) =
+            weatherRepository
+                .getWeatherForecastInHoursFromCache(city)
+                .map { list -> list.filter { it.timeEpoch.minus(getCurrentTime()) > 0 } }
 
         suspend fun getWeatherFromRemote(city: String) {
             val weather = weatherRepository.getForecastWeatherFromRemote(city).data
@@ -46,13 +58,16 @@ class GetForecastWeatherUseCase
             weather
                 ?.forecastData
                 ?.dailyForecastDataList
-                ?.forEach { day ->
-                    weatherRepository.addWeather(city, day.toHourlyWeatherItem(city))
+                ?.flatMap { it.toHourlyWeatherItem(city) }
+                ?.forEach { hour ->
+                    weatherRepository.addWeather(city, hour)
                 }
             weather
                 ?.forecastData
                 ?.dailyForecastDataList
-                ?.map { it.toDailyWeatherItem(city) }
-                .run { weatherRepository.addWeather(city, this) }
+                ?.mapNotNull { it.toDailyWeatherItem(city) }
+                ?.forEach { day ->
+                    weatherRepository.addWeather(city, day)
+                }
         }
     }

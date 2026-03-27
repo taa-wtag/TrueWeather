@@ -28,7 +28,7 @@ class WeatherConditionMapperUtil {
             } else if (text.contains("thunder", true)) {
                 "Thunder"
             } else {
-                "Text $text"
+                text
             }
 
         fun getMediumCondition(text: String): String {

@@ -1,5 +1,8 @@
 package com.rektstudios.trueweather.domain.util
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 sealed class Resource<T>(
     val data: T? = null,
     val message: String? = null,

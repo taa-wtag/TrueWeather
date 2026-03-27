@@ -4,7 +4,9 @@ import com.rektstudios.trueweather.data.local.dao.IDatabaseDao
 import com.rektstudios.trueweather.data.local.entity.CityEntity
 import com.rektstudios.trueweather.data.remote.MapBoxApiService
 import com.rektstudios.trueweather.data.remote.MapboxQuery
+import com.rektstudios.trueweather.data.remote.MapboxReverseGeocode
 import com.rektstudios.trueweather.data.remote.toMap
+import com.rektstudios.trueweather.data.reponse.mapbox.GeoJsonResponse
 import com.rektstudios.trueweather.data.reponse.mapbox.SearchResponse
 import com.rektstudios.trueweather.domain.repository.ICityRepository
 import com.rektstudios.trueweather.domain.util.CheckResponseUtil
@@ -32,6 +34,25 @@ class CityRepositoryImpl
                             MapboxQuery(
                                 searchQuery = searchQuery,
                                 sessionToken = USER_UUID,
+                            ).toMap(),
+                        ),
+                    ).checkResponse()
+                } catch (_: Exception) {
+                    Resource.Error(SERVER_ERROR_MESSAGE, null)
+                }
+            }
+
+        override suspend fun reverseGeocodePlaces(
+            longitude: Double,
+            latitude: Double,
+        ): Resource<GeoJsonResponse> =
+            withContext(Dispatchers.IO) {
+                try {
+                    CheckResponseUtil(
+                        mapBoxApiService.getPlaceSuggestions(
+                            MapboxReverseGeocode(
+                                longitude = longitude,
+                                latitude = latitude,
                             ).toMap(),
                         ),
                     ).checkResponse()

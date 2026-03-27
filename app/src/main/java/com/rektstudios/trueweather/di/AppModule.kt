@@ -9,13 +9,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
-import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestManager
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import com.rektstudios.trueweather.R
 import com.rektstudios.trueweather.data.helper.GeocodeHelper
 import com.rektstudios.trueweather.data.local.dao.IDatabaseDao
 import com.rektstudios.trueweather.data.remote.MapBoxApiService
@@ -81,41 +77,34 @@ object AppModule {
     @Singleton
     fun providePrefsRepository(prefsDataStore: DataStore<Preferences>): IPrefsRepository = PrefsRepositoryImpl(prefsDataStore)
 
+    @Provides
+    @Singleton
+    fun provideJson(): Json =
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            explicitNulls = false
+        }
+
     @Singleton
     @Provides
-    fun provideWeatherApi(): WeatherApiService {
-        val jsonConfig =
-            Json {
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-            }
-        val contentType = "application/json".toMediaType()
-
-        return Retrofit
+    fun provideWeatherApi(json: Json): WeatherApiService =
+        Retrofit
             .Builder()
-            .addConverterFactory(jsonConfig.asConverterFactory(contentType = contentType))
             .baseUrl(WEATHER_BASE_URL)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(WeatherApiService::class.java)
-    }
 
     @Singleton
     @Provides
-    fun provideMapboxApi(): MapBoxApiService {
-        val jsonConfig =
-            Json {
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-            }
-        val contentType = "application/json".toMediaType()
-
-        return Retrofit
+    fun provideMapboxApi(json: Json): MapBoxApiService =
+        Retrofit
             .Builder()
-            .addConverterFactory(jsonConfig.asConverterFactory(contentType = contentType))
             .baseUrl(MAPBOX_BASE_URL)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(MapBoxApiService::class.java)
-    }
 
     @Provides
     @Singleton
@@ -151,9 +140,9 @@ object AppModule {
     @Singleton
     @Provides
     fun provideGetCityNameFromLocationUseCase(
-        weatherRepository: IWeatherRepository,
+        cityRepository: ICityRepository,
         geocodeHelper: IGeocodeHelper,
-    ): GetCityNameFromLocationUseCase = GetCityNameFromLocationUseCase(weatherRepository, geocodeHelper)
+    ): GetCityNameFromLocationUseCase = GetCityNameFromLocationUseCase(cityRepository, geocodeHelper)
 
     @Singleton
     @Provides
@@ -190,15 +179,4 @@ object AppModule {
     @Singleton
     @Provides
     fun provideUserPrefsUseCase(prefsRepository: IPrefsRepository): UserPrefsUseCase = UserPrefsUseCase(prefsRepository)
-
-    @Singleton
-    @Provides
-    fun provideGlideInstance(
-        @ApplicationContext context: Context,
-    ): RequestManager =
-        Glide.with(context).setDefaultRequestOptions(
-            RequestOptions()
-                .placeholder(R.drawable.ic_image)
-                .error(R.drawable.ic_image),
-        )
 }

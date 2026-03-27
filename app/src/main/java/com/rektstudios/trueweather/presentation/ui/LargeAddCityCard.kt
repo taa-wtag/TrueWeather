@@ -67,6 +67,6 @@ fun LargeAddCityCard(
 @Composable
 fun LargeAddCityCardPreview() {
     LargeAddCityCard(
-        onAddCityClick = { /* Do nothing in preview */ },
+        onAddCityClick = { },
     )
 }

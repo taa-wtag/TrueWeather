@@ -2,6 +2,8 @@ package com.rektstudios.trueweather.domain.repository
 
 import com.rektstudios.trueweather.data.local.entity.DailyWeatherEntity
 import com.rektstudios.trueweather.data.local.entity.HourlyWeatherEntity
+import com.rektstudios.trueweather.data.local.entity.Weather
+import com.rektstudios.trueweather.data.reponse.weather.CityData
 import com.rektstudios.trueweather.data.reponse.weather.CurrentWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.ForecastWeatherResponse
 import com.rektstudios.trueweather.data.reponse.weather.PlaceResponse
@@ -30,7 +32,7 @@ interface IWeatherRepository {
         days: Int = FORECAST_MAX_DAYS,
     ): Flow<List<HourlyWeatherEntity>>
 
-    suspend fun <T> addWeather(
+    suspend fun <T : Weather> addWeather(
         city: String,
         weather: T,
     )
@@ -38,7 +40,7 @@ interface IWeatherRepository {
     suspend fun getCityNameFromRemote(
         lat: Double,
         lon: Double,
-    ): Resource<PlaceResponse>
+    ): Resource<List<CityData>>
 
     suspend fun searchCity(city: String): Resource<PlaceResponse>
 }

@@ -35,7 +35,7 @@ interface IDatabaseDao {
         """
         SELECT h.* FROM hourly_weather_table h
         WHERE h.cityName = :city
-        ORDER BY h.timeEpoch DESC
+        ORDER BY h.timeEpoch ASC
         LIMIT 1
     """,
     )
@@ -45,6 +45,7 @@ interface IDatabaseDao {
         """
         SELECT h.* FROM daily_weather_table h
         WHERE h.cityName = :city
+        ORDER BY h.dateEpoch ASC
     """,
     )
     fun getCityWeatherForecastInDays(city: String): Flow<List<DailyWeatherEntity>>
@@ -53,6 +54,7 @@ interface IDatabaseDao {
         """
         SELECT h.* FROM hourly_weather_table h
         WHERE h.cityName = :city
+        ORDER BY h.timeEpoch ASC
     """,
     )
     fun getCityWeatherForecastInHours(city: String): Flow<List<HourlyWeatherEntity>>

@@ -1,12 +1,11 @@
 package com.rektstudios.trueweather.data.reponse.weather
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonTransformingSerializer
+import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class HourlyWeatherData(
     @SerialName("condition")
@@ -22,10 +21,10 @@ data class HourlyWeatherData(
     val tempC: Double?,
     @SerialName("temp_f")
     val tempF: Double?,
-    @Serializable(with = TimeSerializer::class)
-    val timeString: String? = null,
-    @Serializable(with = EpochSerializer::class)
-    val timeEpoch: Int? = null,
+    @JsonNames("last_updated")
+    val time: String?,
+    @JsonNames("last_updated_epoch", "time_epoch")
+    val timeEpoch: Int?,
     @SerialName("vis_km")
     val visKm: Double?,
     @SerialName("vis_miles")
@@ -36,20 +35,3 @@ data class HourlyWeatherData(
     val windMph: Double?,
 )
 
-object TimeSerializer : JsonTransformingSerializer<String>(String.serializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement =
-        if (element is JsonObject) {
-            element["time"] ?: element["last_updated"] ?: kotlinx.serialization.json.JsonNull
-        } else {
-            element
-        }
-}
-
-object EpochSerializer : JsonTransformingSerializer<String>(String.serializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement =
-        if (element is JsonObject) {
-            element["time_epoch"] ?: element["last_updated_epoch"] ?: kotlinx.serialization.json.JsonNull
-        } else {
-            element
-        }
-}

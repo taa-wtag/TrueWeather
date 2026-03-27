@@ -5,28 +5,30 @@ import com.rektstudios.trueweather.data.local.entity.HourlyWeatherEntity
 import com.rektstudios.trueweather.data.reponse.weather.DailyForecastData
 import com.rektstudios.trueweather.data.reponse.weather.HourlyWeatherData
 
-fun HourlyWeatherData.toHourlyWeatherItem(cityName: String): HourlyWeatherEntity =
-    HourlyWeatherEntity(
-        0,
-        cityName,
-        timeEpoch?.toLong(),
-        timeString,
-        tempC,
-        tempF,
-        feelsLikeC,
-        feelsLikeF,
-        visKm,
-        visMiles,
-        windKph,
-        windMph,
-        humidity,
-        isDay,
-        weatherCondition?.text,
-        "https:" + weatherCondition?.icon,
-    )
+fun HourlyWeatherData.toHourlyWeatherItem(cityName: String): HourlyWeatherEntity? =
+    this.timeEpoch?.toLong()?.let {
+        HourlyWeatherEntity(
+            0,
+            cityName,
+            it,
+            time,
+            tempC,
+            tempF,
+            feelsLikeC,
+            feelsLikeF,
+            visKm,
+            visMiles,
+            windKph,
+            windMph,
+            humidity,
+            isDay,
+            weatherCondition?.text,
+            "https:" + weatherCondition?.icon,
+        )
+    }
 
 fun DailyForecastData.toHourlyWeatherItem(cityName: String): List<HourlyWeatherEntity> =
-    this.hourlyWeatherDataList?.map {
+    this.hourlyWeatherDataList?.mapNotNull {
         it.toHourlyWeatherItem(cityName)
     } ?: emptyList()
 

@@ -34,6 +34,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,21 +48,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rektstudios.trueweather.R
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rektstudios.trueweather.presentation.ui.theme.PoppinsFontFamily
+import com.rektstudios.trueweather.presentation.viewmodels.CityViewModel
 
 @Composable
 fun CitiesScreen(
     onBackClick: () -> Unit,
+    viewModel: CityViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
     val aspectRatio = with(configuration) { screenWidthDp.dp / screenHeightDp.dp }
     var isSearchModalVisible by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQuery by viewModel.searchQuery.collectAsState()
+
+    val cityList by viewModel.cityCardDataList.collectAsState(emptyList())
+    val suggestedCities by viewModel.suggestedCities.collectAsState()
 
     Scaffold { safePadding ->
-        Box(modifier = modifier.padding(safePadding).fillMaxSize()) {
+        Box(
+            modifier =
+                modifier
+                    .padding(safePadding)
+                    .fillMaxSize()
+                    .background(Color.White),
+        ) {
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 160.dp),
                 modifier =
@@ -72,16 +84,7 @@ fun CitiesScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(10) { _ ->
-                    SmallCityCard(
-                        "BD",
-                        "BD",
-                        "30",
-                        "Sunny",
-                        CardGradientBackgroundColor.Purple,
-                        R.drawable.ic_image,
-                    )
-                }
+                items(cityList.size) { index -> SmallCityCard(cityList[index], { viewModel.deleteCity(it) }) }
             }
 
             IconButton(
@@ -164,7 +167,7 @@ fun CitiesScreen(
                     ) {
                         OutlinedTextField(
                             value = searchQuery,
-                            onValueChange = { searchQuery = it },
+                            onValueChange = { viewModel.searchCities(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text("Search Cities...", color = Color.Gray) },
                             leadingIcon = {
@@ -185,13 +188,16 @@ fun CitiesScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                            items(5) { suggestion ->
+                            items(suggestedCities.size) { index ->
                                 Text(
-                                    text = "Suggestion $suggestion",
+                                    text = suggestedCities[index],
                                     modifier =
                                         Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                                            .clickable {
+                                                viewModel.addCity(suggestedCities[index])
+                                                isSearchModalVisible = false
+                                            }.padding(vertical = 12.dp, horizontal = 8.dp),
                                 )
                             }
                         }

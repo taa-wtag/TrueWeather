@@ -1,13 +1,14 @@
 package com.rektstudios.trueweather.domain.usecase
 
 import com.rektstudios.trueweather.domain.helper.IGeocodeHelper
-import com.rektstudios.trueweather.domain.repository.IWeatherRepository
+import com.rektstudios.trueweather.domain.mapper.toCityName
+import com.rektstudios.trueweather.domain.repository.ICityRepository
 import javax.inject.Inject
 
 class GetCityNameFromLocationUseCase
     @Inject
     constructor(
-        private val weatherRepository: IWeatherRepository,
+        private val cityRepository: ICityRepository,
         private val geocodeHelper: IGeocodeHelper,
     ) {
         suspend operator fun invoke(
@@ -25,9 +26,12 @@ class GetCityNameFromLocationUseCase
             lat: Double,
             lon: Double,
         ): String =
-            weatherRepository.getCityNameFromRemote(lat, lon).data?.let { item ->
-                item.firstOrNull()?.let {
-                    it.cityName + ", " + it.countryName
-                }
-            } ?: ""
+            cityRepository
+                .reverseGeocodePlaces(lon, lat)
+                .data
+                ?.features
+                ?.firstOrNull()
+                ?.citySuggestion
+                ?.toCityName()
+                .orEmpty()
     }

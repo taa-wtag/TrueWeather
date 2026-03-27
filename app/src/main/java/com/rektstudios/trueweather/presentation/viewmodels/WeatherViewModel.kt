@@ -1,22 +1,35 @@
-package com.rektstudios.trueweather.presentation
+package com.rektstudios.trueweather.presentation.viewmodels
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rektstudios.trueweather.data.local.entity.CityEntity
-import com.rektstudios.trueweather.data.local.entity.DailyWeatherEntity
 import com.rektstudios.trueweather.data.local.entity.HourlyWeatherEntity
+import com.rektstudios.trueweather.data.local.entity.toCityCardData
+import com.rektstudios.trueweather.data.local.entity.toDailyWeatherData
+import com.rektstudios.trueweather.data.local.entity.toWeatherHourCardData
+import com.rektstudios.trueweather.domain.data.CityCardData
+import com.rektstudios.trueweather.domain.data.CityState
 import com.rektstudios.trueweather.domain.usecase.CurrentCityUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCityListUseCase
 import com.rektstudios.trueweather.domain.usecase.GetCurrentWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.GetForecastWeatherUseCase
 import com.rektstudios.trueweather.domain.usecase.UserPrefsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class WeatherViewModel
     @Inject
@@ -27,63 +40,107 @@ class WeatherViewModel
         private val getForecastWeatherUseCase: GetForecastWeatherUseCase,
         private val currentCityUseCase: CurrentCityUseCase,
     ) : ViewModel() {
-        val currentCity = MutableLiveData("")
-        val isMetric = MutableStateFlow<Boolean?>(null)
-        val isCelsius = MutableStateFlow<Boolean?>(null)
-        val cityList = MutableStateFlow<List<CityEntity>>(emptyList())
-        val currentCityDailyWeatherForecast = MutableStateFlow<List<DailyWeatherEntity>>(emptyList())
-        val currentCityHourlyWeatherForecast = MutableStateFlow<List<HourlyWeatherEntity>>(emptyList())
+        private val currentCity = MutableStateFlow("")
+        private val isMetric = MutableStateFlow(true)
+        private val isCelsius = MutableStateFlow(true)
+        private val cityList = MutableStateFlow<List<CityEntity>>(emptyList())
+        private val _cityCardList = MutableStateFlow<List<CityCardData>>(emptyList())
+        val cityCardList = _cityCardList.asStateFlow()
+        val currentCityState =
+            combine(
+                currentCity,
+                cityList,
+                isCelsius,
+            ) { city, list, celsius ->
+                Triple(city, list, celsius)
+            }.flatMapLatest { (city, list, celsius) ->
+                if (city.isEmpty() || list.none { it.cityName == city }) {
+                    return@flatMapLatest flowOf(CityState())
+                }
+
+                combine(
+                    getForecastWeatherUseCase.getWeatherHour(city),
+                    getForecastWeatherUseCase.getWeatherDay(city),
+                ) { hourlyData, dailyData ->
+                    val initialHour = hourlyData.firstOrNull()
+                    val dailyList = dailyData.filter { it.cityName == city }
+                    val hourlyList = hourlyData.filter { it.cityName == city && filterHourlyList(initialHour, it) }
+
+                    CityState(
+                        hourlyList.map { it.toWeatherHourCardData() },
+                        dailyList.map { it.toDailyWeatherData(celsius) },
+                    )
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = CityState(),
+            )
 
         init {
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 launch { userPrefsUseCase.getIsCelsius().collect(isCelsius) }
                 launch { userPrefsUseCase.getIsMetric().collect(isMetric) }
-                launch { getCityListUseCase().collect { cityList.value = it } }
                 launch {
-                    currentCityUseCase
-                        .getCurrentCity()
-                        ?.let { setCurrentCityAndWeather(it.cityName) }
+                    getCityListUseCase().collectLatest {
+                        cityList.value = it
+                        currentCity.emit(it.firstOrNull()?.cityName.orEmpty())
+                    }
+                }
+                launch {
+                    currentCity
+                        .collectLatest {
+                            currentCityUseCase.setCurrentCity(it)
+                        }
+                }
+                launch {
+                    combine(
+                        currentCity,
+                        cityList,
+                        isCelsius,
+                    ) { city, list, celcius ->
+                        Triple(city, list, celcius)
+                    }.flatMapLatest { (city, list, celsius) ->
+                        if (city.isEmpty() || list.none { it.cityName == city }) {
+                            return@flatMapLatest flowOf(
+                                list.map { city ->
+                                    _cityCardList.value.find { it.name == city.cityName }
+                                        ?: city.toCityCardData(null, celsius)
+                                },
+                            )
+                        }
+
+                        getCurrentWeatherUseCase(city).map { weather ->
+                            list.map { city ->
+                                weather?.takeIf { it.cityName == city.cityName }
+                                    ?: return@map _cityCardList.value.find { it.name == city.cityName }
+                                        ?: city.toCityCardData(null, celsius)
+                                city.toCityCardData(weather, celsius)
+                            }
+                        }
+                    }.collectLatest {
+                        _cityCardList.emit(it)
+                    }
                 }
             }
         }
 
-        fun setCurrentCityAndWeather(city: String) =
-            viewModelScope.launch {
-                if (city.isEmpty()) {
-                    currentCity.postValue(city)
-                    currentCityDailyWeatherForecast.emit(emptyList())
-                    currentCityHourlyWeatherForecast.emit(emptyList())
-                } else if (checkCityInCityList(city)) {
-                    currentCity.postValue(city)
-                    launch { currentCityUseCase.setCurrentCity(city) }
-                    launch { getCurrentWeatherUseCase(city) }
-                    launch {
-                        getForecastWeatherUseCase
-                            .getWeatherDay(city)
-                            .collect(currentCityDailyWeatherForecast)
-                    }
-                    launch {
-                        getForecastWeatherUseCase
-                            .getWeatherHour(city)
-                            .collect(currentCityHourlyWeatherForecast)
-                    }
-                }
+        fun setCurrentCity(city: String) =
+            viewModelScope.launch(Dispatchers.IO) {
+                currentCity.emit(city)
             }
 
         fun setCurrentCityFromGPS() =
             viewModelScope.launch {
-                val cityCount = cityList.value.size
                 currentCityUseCase.getCurrentCityFromLocation()?.let {
-                    if (cityList.value.size != cityCount) {
-                        it.cityName.let { it1 ->
-                            setCurrentCityAndWeather(it1)
-                        }
+                    if (checkCityInCityList(it.cityName)) {
+                        setCurrentCity(it.cityName)
                     }
                 }
             }
 
         fun refreshWeatherData(
-            city: String = currentCity.value ?: "",
+            city: String = currentCity.value,
             stopRefreshing: () -> Unit,
         ) = viewModelScope.launch {
             if (city.isNotEmpty()) {
@@ -94,13 +151,22 @@ class WeatherViewModel
 
         fun toggleMetric() =
             viewModelScope.launch {
-                isMetric.firstOrNull()?.let { userPrefsUseCase.setMetric(!it) }
+                userPrefsUseCase.setMetric(isMetric.value)
             }
 
         fun toggleCelsius() =
             viewModelScope.launch {
-                isCelsius.firstOrNull()?.let { userPrefsUseCase.setCelsius(!it) }
+                userPrefsUseCase.setCelsius(isCelsius.value)
             }
 
-        private suspend fun checkCityInCityList(city: String): Boolean = cityList.firstOrNull()?.find { it.cityName == city } != null
+        private fun checkCityInCityList(city: String): Boolean = cityList.value.find { it.cityName == city } != null
+
+        private fun filterHourlyList(
+            currentHour: HourlyWeatherEntity?,
+            hourToCompare: HourlyWeatherEntity,
+        ): Boolean {
+            val initialHour = currentHour?.timeString?.substringBefore(" ") ?: return false
+            val comparingHour = hourToCompare.timeString?.substringBefore(" ") ?: return false
+            return initialHour == comparingHour
+        }
     }
