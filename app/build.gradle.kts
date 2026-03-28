@@ -1,9 +1,35 @@
+import com.android.build.api.dsl.VariantDimension
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp.plugin)
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ktx.serializer)
+}
+
+fun getEnvironmentProperties(
+    file: String,
+    action: (String, String) -> Unit,
+) {
+    val envPropertiesFile = rootProject.file(file)
+    val values = Properties()
+
+    envPropertiesFile.inputStream().use {
+        values.load(it)
+    }
+
+    values.forEach { (key, value) ->
+        action(key.toString(), value.toString())
+    }
+}
+
+fun VariantDimension.generateConstants(file: String) {
+    getEnvironmentProperties(file) { key, value ->
+        buildConfigField("String", key, "\"$value\"")
+        manifestPlaceholders[key] = value
+    }
 }
 
 android {
@@ -22,14 +48,17 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "API_KEY", "\"${project.findProperty("API_KEY") ?: ""}\"")
-        buildConfigField("String", "TOKEN_KEY", "\"${properties.getValue("TOKEN_KEY") ?: ""}\"")
+        generateConstants("./app/config/development.props")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        debug {
+            generateConstants("./app/config/development.props")
+        }
         release {
+            generateConstants("./app/config/production.props")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
